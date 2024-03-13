@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"crypto/rand"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -33,5 +34,7 @@ func ValidateAuthentication() gin.HandlerFunc {
 func isAuthenticated(c *gin.Context) bool {
 	session := sessions.Default(c)
 	sessionId := session.Get(c.Request.Header.Get("Authorization"))
+	fmt.Println(c.Request.Header.Get("Authorization"))
+	fmt.Println(sessionId)
 	return sessionId == c.Request.Header.Get("Session")
 }

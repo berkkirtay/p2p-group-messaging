@@ -94,8 +94,12 @@ func JoinRoom(id string, room Room, userId string) Room {
 		cur.Decode(&actualRoom)
 	}
 
-	// Check if the found room and the given room are equal for room auth and validation:
-	if actualRoom.Password != room.Password || len(actualRoom.Members) >= int(actualRoom.Capacity) {
+	/*
+	 * Check if the found room and the given room
+	 * are equal for room authentication and validation:
+	 */
+	if actualRoom.Password != room.Password ||
+		len(actualRoom.Members) >= int(actualRoom.Capacity) {
 		return CreateDefaultRoom()
 	}
 

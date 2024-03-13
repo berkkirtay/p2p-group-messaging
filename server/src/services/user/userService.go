@@ -57,8 +57,6 @@ func GetUsers(id string, size string) []User {
 	return users
 }
 
-// Write a wrapper for user for error emssages:
-// {errors, user:{}}
 func PostUser(user User) User {
 	checkUserValidity(user)
 	builtUser := buildUser(user)
@@ -86,7 +84,7 @@ func buildUser(user User) User {
 	if res == nil && err == nil {
 		// No user is found in the DB,
 		// Generate a default id:
-		newUserId = 10000
+		newUserId = 12345
 	} else {
 		res.Decode(&lastRecord)
 		newUserId, _ = strconv.Atoi(lastRecord.Id)
@@ -101,13 +99,12 @@ func buildUser(user User) User {
 			user.Name,
 			user.Role)),
 		WithActions(nil),
-		WithFeatures(nil),
 		WithAudit(user.Audit))
 }
 
 func PutUser(id string, user User) User {
-
 	return user
+
 }
 
 func DeleteUser(id string) {

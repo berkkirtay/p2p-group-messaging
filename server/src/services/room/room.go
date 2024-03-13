@@ -5,6 +5,8 @@ import (
 	"main/services/cryptography"
 )
 
+// Reminder: Owner of the room can be verified easily by checking the signature.
+
 type Room struct {
 	Id        string                  `json:"id,omitempty" bson:"id,omitempty"`
 	Name      string                  `json:"name,omitempty" bson:"name,omitempty"`

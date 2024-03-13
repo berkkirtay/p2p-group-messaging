@@ -22,7 +22,7 @@ func getUser(c *gin.Context) {
 func postUser(c *gin.Context) {
 	var userBody user.User
 	err := json.NewDecoder(c.Request.Body).Decode(&userBody)
-	if err != nil { //Error: Invalid body"
+	if err != nil {
 		panic(err)
 	}
 	userBody.Audit = audit.CreateAuditForUser(c.ClientIP())

@@ -12,7 +12,6 @@ type User struct {
 	Role      string                  `json:"role,omitempty" bson:"role,omitempty"`
 	Signature *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
 	Actions   []*Action               `json:"actions,omitempty" bson:"actions,omitempty"`
-	Features  []*Feature              `json:"features,omitempty" bson:"features,omitempty"`
 	Audit     *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
 }
 
@@ -56,13 +55,6 @@ func WithSignature(signature *cryptography.Signature) UserOption {
 func WithActions(actions []*Action) UserOption {
 	return func(user User) User {
 		user.Actions = actions
-		return user
-	}
-}
-
-func WithFeatures(features []*Feature) UserOption {
-	return func(user User) User {
-		user.Features = features
 		return user
 	}
 }

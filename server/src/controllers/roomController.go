@@ -21,7 +21,7 @@ func getRooms(c *gin.Context) {
 func createRoom(c *gin.Context) {
 	var roomBody room.Room
 	err := json.NewDecoder(c.Request.Body).Decode(&roomBody)
-	if err != nil { //Error: Invalid body"
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error:": err.Error()})
 	}
 	res := room.PostRoom(roomBody)
@@ -40,7 +40,7 @@ func deleteRooms(c *gin.Context) {
 func updateRoom(c *gin.Context) {
 	var roomBody room.Room
 	err := json.NewDecoder(c.Request.Body).Decode(&roomBody)
-	if err != nil { //Error: Invalid body"
+	if err != nil {
 		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error:": err.Error()})
 	}
 	res := room.UpdateRoom(c.Query("id"), roomBody)
@@ -56,7 +56,8 @@ func joinRoom(c *gin.Context) {
 	}
 	res := room.JoinRoom(c.Query("id"), roomBody, c.Request.Header.Get("Session"))
 	if res.Id == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error:": "You are not authorized to enter this room."})
+		c.AbortWithStatusJSON(http.StatusUnauthorized,
+			gin.H{"Error:": "You are not authorized to enter this room."})
 	}
 	c.JSON(http.StatusOK, res)
 }
@@ -97,11 +98,11 @@ func Roomouter(routerGroup *gin.RouterGroup) {
 	roomRouter := routerGroup.Group("/room")
 	{
 		roomRouter.GET("", getRooms)
-		roomRouter.GET("/messages", ReceiveMessagesHTTP)
 		roomRouter.POST("", createRoom)
-		roomRouter.POST("/messages", SendAMessageHTTP)
 		roomRouter.DELETE("", deleteRooms)
 		roomRouter.PUT("", updateRoom)
+		roomRouter.GET("/messages", ReceiveMessagesHTTP)
+		roomRouter.POST("/messages", SendAMessageHTTP)
 		roomRouter.POST("/join", joinRoom)
 		roomRouter.POST("/leave", leaveRoom)
 	}

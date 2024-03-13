@@ -2,6 +2,7 @@ package cryptography
 
 import "time"
 
+// TODO area.
 func CreateDefaultCrypto(keyPair string, values ...interface{}) *Signature {
 	hash, nonce := generateHash(values)
 	return CreateSignature(WithPublicKey(keyPair),

@@ -27,7 +27,8 @@ func NewRepo(collection string) *repository {
 	return repository
 }
 
-func (r *repository) FindOne(ctx context.Context, filters interface{}, options *options.FindOneOptions) (res *mongo.SingleResult, err error) {
+func (r *repository) FindOne(ctx context.Context, filters interface{},
+	options *options.FindOneOptions) (res *mongo.SingleResult, err error) {
 	cur := r.collection.FindOne(context.TODO(), filters, options)
 	if cur.Err() == mongo.ErrNoDocuments {
 		return nil, nil
@@ -38,10 +39,8 @@ func (r *repository) FindOne(ctx context.Context, filters interface{}, options *
 	return cur, nil
 }
 
-func (r *repository) Find(
-	ctx context.Context,
-	filters interface{},
-	options *options.FindOptions) (cur *mongo.Cursor, err error) {
+func (r *repository) Find(ctx context.Context,
+	filters interface{}, options *options.FindOptions) (cur *mongo.Cursor, err error) {
 	cur, err = r.collection.Find(context.TODO(), filters, options)
 	if err == mongo.ErrNoDocuments {
 		return nil, nil
@@ -52,7 +51,8 @@ func (r *repository) Find(
 	return cur, nil
 }
 
-func (r *repository) InsertOne(ctx context.Context, data interface{}) (res *mongo.InsertOneResult, err error) {
+func (r *repository) InsertOne(ctx context.Context,
+	data interface{}) (res *mongo.InsertOneResult, err error) {
 	res, err = r.collection.InsertOne(context.TODO(), data)
 	if err != nil {
 		panic(err)
@@ -60,7 +60,8 @@ func (r *repository) InsertOne(ctx context.Context, data interface{}) (res *mong
 	return res, err
 }
 
-func (r *repository) UpdateOne(filters interface{}, options *options.UpdateOptions, data interface{}) (res *mongo.UpdateResult, err error) {
+func (r *repository) UpdateOne(filters interface{},
+	options *options.UpdateOptions, data interface{}) (res *mongo.UpdateResult, err error) {
 	res, err = r.collection.UpdateOne(context.TODO(), filters, data, options)
 	if err != nil {
 		panic(err)
@@ -68,7 +69,8 @@ func (r *repository) UpdateOne(filters interface{}, options *options.UpdateOptio
 	return res, err
 }
 
-func (r *repository) ReplaceOne(filters interface{}, options *options.ReplaceOptions, data interface{}) (res *mongo.UpdateResult, err error) {
+func (r *repository) ReplaceOne(filters interface{},
+	options *options.ReplaceOptions, data interface{}) (res *mongo.UpdateResult, err error) {
 	res, err = r.collection.ReplaceOne(context.TODO(), filters, data, options)
 	if err != nil {
 		panic(err)
