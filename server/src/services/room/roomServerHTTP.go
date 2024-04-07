@@ -4,6 +4,7 @@ import (
 	"context"
 	"main/infrastructure"
 	"main/services/audit"
+	"main/services/cryptography"
 	"slices"
 	"strconv"
 
@@ -13,12 +14,13 @@ import (
 )
 
 /*
-Basic messaging service on HTTP.
-This implementation uses permanent persistence of room instances.
-Whereas in P2P implementation, a room can only be run by a peer.
-The peers must be part of the room members to be able to host the
-room and send messages.
-*/
+ * Basic messaging service on HTTP.
+ * This implementation uses permanent persistence of room instances.
+ * Whereas in P2P implementation, a room can only be run by a peer.
+ * The peers must be part of the room members to be able to host the
+ * room and send messages.
+ */
+
 type RoomServerHTTP interface {
 	ReceiveMessages(id string, userId string, size string) []Message
 	SendAMessage(id string, userId string, message string) Message
@@ -26,11 +28,13 @@ type RoomServerHTTP interface {
 }
 
 var messageRepository = infrastructure.NewRepo("messaging")
+var cachedRoom Room
 
 func ReceiveMessages(id string, size string, userId string) []Message {
 	var messages []Message = []Message{}
+	var room Room = fetchTargetRoom(id)
 	// Check if the user is in the room:
-	if !validateUserRoomAuth(id, userId) {
+	if !validateUserRoomAuth(room, userId) {
 		return messages
 	}
 
@@ -55,6 +59,7 @@ func ReceiveMessages(id string, size string, userId string) []Message {
 			if err != nil {
 				panic(err)
 			}
+			currentMessage.Text = cryptography.Decrypt(currentMessage.Text, room.RoomMasterKey)
 			messages = append(messages, currentMessage)
 		}
 	}
@@ -63,30 +68,34 @@ func ReceiveMessages(id string, size string, userId string) []Message {
 
 func SendAMessage(id string, userId string, message Message) Message {
 	// Check if the user is in the room:
-	if !validateUserRoomAuth(id, userId) {
+	var room Room = fetchTargetRoom(id)
+	if !validateUserRoomAuth(room, userId) {
 		return CreateDefaultMessage()
 	}
 
 	// Build and send the message:
-	var builtMessage Message = buildAMessage(id, userId, message)
+	var builtMessage Message = buildAMessage(room, userId, message)
 	messageRepository.InsertOne(context.TODO(), builtMessage)
 	return builtMessage
 }
 
-func validateUserRoomAuth(id string, userId string) bool {
-	var room Room
+func fetchTargetRoom(id string) Room {
+	if id == cachedRoom.Id {
+		return cachedRoom
+	}
 	filter := bson.D{{Key: "id", Value: id}}
 	cur, err := roomRepository.FindOne(context.TODO(), filter, nil)
 	if cur != nil && err == nil {
-		cur.Decode(&room)
+		cur.Decode(&cachedRoom)
 	}
-	if !slices.Contains(room.Members, userId) {
-		return false
-	}
-	return true
+	return cachedRoom
 }
 
-func buildAMessage(roomId string, userId string, message Message) Message {
+func validateUserRoomAuth(room Room, userId string) bool {
+	return slices.Contains(room.Members, userId)
+}
+
+func buildAMessage(room Room, userId string, message Message) Message {
 	// Generate an id for message:
 	var lastRecord Message = Message{}
 	var newMessageId int
@@ -100,12 +109,11 @@ func buildAMessage(roomId string, userId string, message Message) Message {
 		res.Decode(&lastRecord)
 		newMessageId, _ = strconv.Atoi(lastRecord.Id)
 	}
-
 	return CreateMessage(
 		WithMessageId(strconv.Itoa(newMessageId+1)),
 		WithUserId(userId),
-		WithRoomId(roomId),
-		WithText(message.Text),
+		WithRoomId(room.Id),
+		WithText(cryptography.Encrypt(message.Text, room.RoomMasterKey)),
 		WithMessageSignature(nil),
 		WithMessageAudit(audit.CreateAuditForMessage()))
 }

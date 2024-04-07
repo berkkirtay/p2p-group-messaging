@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"crypto/rand"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -17,7 +16,7 @@ func InitializeSession(app *gin.Engine) {
 		panic(err)
 	}
 	store := cookie.NewStore([]byte("session"), key)
-	//store.Options
+	//TODO store.Options
 	app.Use(sessions.Sessions("user-session", store))
 }
 
@@ -34,7 +33,5 @@ func ValidateAuthentication() gin.HandlerFunc {
 func isAuthenticated(c *gin.Context) bool {
 	session := sessions.Default(c)
 	sessionId := session.Get(c.Request.Header.Get("Authorization"))
-	fmt.Println(c.Request.Header.Get("Authorization"))
-	fmt.Println(sessionId)
 	return sessionId == c.Request.Header.Get("Session")
 }

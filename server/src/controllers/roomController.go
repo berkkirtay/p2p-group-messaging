@@ -63,11 +63,15 @@ func joinRoom(c *gin.Context) {
 }
 
 func leaveRoom(c *gin.Context) {
-	res := room.LeaveRoom(c.Query("id"))
-	c.JSON(http.StatusOK, res)
+	res := room.LeaveRoom(c.Query("id"), c.Request.Header.Get("Session"))
+	if res {
+		c.Status(http.StatusOK)
+	} else {
+		c.Status(http.StatusNotFound)
+	}
 }
 
-func ReceiveMessagesHTTP(c *gin.Context) {
+func receiveMessagesHTTP(c *gin.Context) {
 	res := room.ReceiveMessages(c.Query("id"), c.Query("size"), c.Request.Header.Get("Session"))
 	if len(res) == 0 {
 		c.JSON(http.StatusNotFound, res)
@@ -76,7 +80,7 @@ func ReceiveMessagesHTTP(c *gin.Context) {
 	}
 }
 
-func SendAMessageHTTP(c *gin.Context) {
+func sendAMessageHTTP(c *gin.Context) {
 	var messageBody room.Message
 	err := json.NewDecoder(c.Request.Body).Decode(&messageBody)
 	if err != nil {
@@ -101,8 +105,8 @@ func Roomouter(routerGroup *gin.RouterGroup) {
 		roomRouter.POST("", createRoom)
 		roomRouter.DELETE("", deleteRooms)
 		roomRouter.PUT("", updateRoom)
-		roomRouter.GET("/messages", ReceiveMessagesHTTP)
-		roomRouter.POST("/messages", SendAMessageHTTP)
+		roomRouter.GET("/messages", receiveMessagesHTTP)
+		roomRouter.POST("/messages", sendAMessageHTTP)
 		roomRouter.POST("/join", joinRoom)
 		roomRouter.POST("/leave", leaveRoom)
 	}

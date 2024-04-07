@@ -8,14 +8,17 @@ import (
 // Reminder: Owner of the room can be verified easily by checking the signature.
 
 type Room struct {
-	Id        string                  `json:"id,omitempty" bson:"id,omitempty"`
-	Name      string                  `json:"name,omitempty" bson:"name,omitempty"`
-	Info      string                  `json:"info,omitempty" bson:"info,omitempty"`
-	Password  string                  `json:"password,omitempty" bson:"password,omitempty"`
-	Capacity  int64                   `json:"capacity,omitempty" bson:"capacity,omitempty"`
-	Members   []string                `json:"members,omitempty" bson:"members,omitempty"`
-	Signature *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
-	Audit     *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
+	Id               string                  `json:"id,omitempty" bson:"id,omitempty"`
+	Name             string                  `json:"name,omitempty" bson:"name,omitempty"`
+	Info             string                  `json:"info,omitempty" bson:"info,omitempty"`
+	Password         string                  `json:"password,omitempty" bson:"password,omitempty"`
+	Capacity         int64                   `json:"capacity,omitempty" bson:"capacity,omitempty"`
+	Members          []string                `json:"members,omitempty" bson:"members,omitempty"`
+	Signature        *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
+	Audit            *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
+	DiffieHelmanKeys map[string]string       `json:"-"`
+	RoomMasterKey    string                  `json:"-"`
+	HandshakeKey     string                  `json:"handshakeKey,omitempty" bson:"handshakeKey,omitempty"`
 }
 
 type RoomOption func(Room) Room
@@ -72,6 +75,27 @@ func WithSignature(signature *cryptography.Signature) RoomOption {
 func WithAudit(audit *audit.Audit) RoomOption {
 	return func(room Room) Room {
 		room.Audit = audit
+		return room
+	}
+}
+
+func WithDiffieHelmanKeys(masterKeys map[string]string) RoomOption {
+	return func(room Room) Room {
+		room.DiffieHelmanKeys = masterKeys
+		return room
+	}
+}
+
+func WithRoomMasterKey(roomMasterKey string) RoomOption {
+	return func(room Room) Room {
+		room.RoomMasterKey = roomMasterKey
+		return room
+	}
+}
+
+func WithHandshakeKey(handshakeKey string) RoomOption {
+	return func(room Room) Room {
+		room.HandshakeKey = handshakeKey
 		return room
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"context"
 	"main/infrastructure"
 	"main/services/audit"
+	"main/services/cryptography"
+	"slices"
 	"strconv"
 	"time"
 
@@ -18,7 +20,7 @@ type RoomService interface {
 	DeleteRooms(ids []string) []Room                   // DELETE
 	UpdateRoom(id string, room Room) Room              // PUT
 	JoinRoom(id string, room Room, userId string) Room // POST
-	LeaveRoom(id string) Room                          // POST
+	LeaveRoom(id string) bool                          // POST
 	KickUser(roomId string, userId string, userToBeKicked string) bool
 	BanUser(roomId string, userId string, userToBeBanned string) bool
 }
@@ -71,6 +73,7 @@ func PostRoom(room Room) Room {
 		WithPassword(room.Password),
 		WithCapacity(room.Capacity),
 		WithMembers([]string{}),
+		WithRoomMasterKey(cryptography.GenerateARandomMasterSecret()),
 		WithSignature(nil),
 		WithAudit(audit.CreateAuditForRoom()))
 
@@ -94,6 +97,10 @@ func JoinRoom(id string, room Room, userId string) Room {
 		cur.Decode(&actualRoom)
 	}
 
+	if slices.Contains(actualRoom.Members, userId) {
+		return actualRoom
+	}
+
 	/*
 	 * Check if the found room and the given room
 	 * are equal for room authentication and validation:
@@ -102,6 +109,10 @@ func JoinRoom(id string, room Room, userId string) Room {
 		len(actualRoom.Members) >= int(actualRoom.Capacity) {
 		return CreateDefaultRoom()
 	}
+
+	// masterSecret := cryptography.ServerSideDiffieHelmanKeyExhange(userHandshakeKey)
+	// actualRoom.DiffieHelmanKeys[userId] = masterSecret[0]
+	// actualRoom.HandshakeKey = masterSecret[1]
 
 	actualRoom.Members = append(actualRoom.Members, userId)
 	actualRoom.Audit.LastOnlineDate = time.Now().Format(time.RFC1123)
@@ -114,6 +125,30 @@ func JoinRoom(id string, room Room, userId string) Room {
 	return actualRoom
 }
 
-func LeaveRoom(id string) Room {
-	return CreateDefaultRoom()
+func LeaveRoom(id string, userId string) bool {
+	var actualRoom Room
+	filter := bson.D{{Key: "id", Value: id}}
+	cur, err := roomRepository.FindOne(context.TODO(), filter, nil)
+	if cur != nil && err == nil {
+		cur.Decode(&actualRoom)
+	}
+
+	var index int = -1
+	for i, roomUserId := range actualRoom.Members {
+		if roomUserId == userId {
+			index = i
+			break
+		}
+	}
+
+	if index == -1 {
+		return false
+	}
+	actualRoom.Members = slices.Delete(actualRoom.Members, index, index+1)
+	res, _ := roomRepository.ReplaceOne(filter, nil, actualRoom)
+	if res.ModifiedCount == 0 {
+		return false
+	}
+
+	return true
 }

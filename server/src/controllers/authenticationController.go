@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"main/auth"
+	"main/services/auth"
 	"main/services/user"
 	"net/http"
 

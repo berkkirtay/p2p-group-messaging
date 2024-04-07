@@ -2,7 +2,6 @@ package user
 
 import (
 	"context"
-	"fmt"
 	"main/infrastructure"
 	"main/services/cryptography"
 	"strconv"
@@ -71,7 +70,7 @@ func checkUserValidity(user User) {
 	if cur != nil {
 		var duplicateUser User
 		cur.Decode(&duplicateUser)
-		panic(fmt.Sprintf("A user with the same name exists: %s", duplicateUser.Id))
+		panic("A user with the same name exists.")
 	}
 }
 
