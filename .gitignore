@@ -32,3 +32,6 @@ go.work
 
 # Built Visual Studio Code Extensions
 *.vsix
+
+# go executable file output
+main
