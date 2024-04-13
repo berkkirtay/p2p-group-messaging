@@ -4,8 +4,8 @@
 - HMAC based user authentication
 - Chat room authorization
 - HTTP based async messagging with DB synchronization among peers (requires improvement)
-- Diffie-helmann key exchange for p2p key agreement (requires improvement)
-- AES encryption for messages
+- Diffie-hellman key exchange for p2p key agreement (requires improvement)
+- CBC AES encryption for messages
 - RSA based digital signature for verifications (TODO)
 
 ## Considerations
