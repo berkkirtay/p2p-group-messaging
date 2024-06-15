@@ -26,10 +26,19 @@ func postPeer(c *gin.Context) {
 		panic(err)
 	}
 	res := peer.PostPeer(peerBody)
-	if len(res) == 0 {
+	if res.Hostname == "" {
 		c.JSON(http.StatusNotFound, res)
 	} else {
-		c.JSON(http.StatusOK, res)
+		c.JSON(http.StatusCreated, res)
+	}
+}
+
+func deletePeer(c *gin.Context) {
+	deletedCount := peer.DeletePeer(c.Query("hostId"))
+	if deletedCount == 0 {
+		c.Status(http.StatusNotFound)
+	} else {
+		c.Status(http.StatusOK)
 	}
 }
 
@@ -38,5 +47,6 @@ func PeerRouter(routerGroup *gin.RouterGroup) {
 	{
 		peerRouter.GET("", getPeers)
 		peerRouter.POST("", postPeer)
+		peerRouter.DELETE("", deletePeer)
 	}
 }

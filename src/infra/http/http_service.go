@@ -99,12 +99,29 @@ func POST(path string, payload string, respType interface{}, params ...string) *
 			panic(err)
 		}
 	}
-
 	return res
 }
 
 func PUT() {
 
+}
+
+func DELETE(path string, respType interface{}, params ...string) *http.Response {
+	if client == nil {
+		InitializeService(nil)
+	}
+	path = handleQueryParams(path, params)
+	req, err := http.NewRequest(http.MethodDelete, path, nil)
+	if err != nil {
+		panic(err)
+	}
+	prepareHeadersForRequest(req)
+	res, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
+	return res
 }
 
 func prepareHeadersForRequest(req *http.Request) {

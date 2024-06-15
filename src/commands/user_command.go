@@ -5,8 +5,8 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
+	"main/infra/http"
 	"main/services/auth"
-	"main/services/http"
 	"main/services/user"
 )
 
@@ -27,7 +27,7 @@ func HandleLogin(command []string) {
 	password := command[2]
 
 	respBody := make([]user.User, 1)
-	res := http.GET(api+"/api/users", &respBody, "id", userLogin, "name", userLogin)
+	res := http.GET(assignedPeer.Address+"/users", &respBody, "id", userLogin, "name", userLogin)
 
 	if res.StatusCode != 200 {
 		fmt.Printf("User %s does not exist.\n", userLogin)
@@ -59,7 +59,7 @@ func login(authenticationModel *auth.AuthenticationModel) {
 		return
 	}
 
-	res := http.POST(api+"/api/auth", string(body), &authenticationModel)
+	res := http.POST(assignedPeer.Address+"/auth", string(body), &authenticationModel)
 	if res.StatusCode == 202 {
 		authenticationModel.Cookies = res.Cookies()
 	}

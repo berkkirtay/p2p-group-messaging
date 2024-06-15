@@ -3,8 +3,8 @@
 package room
 
 import (
+	"main/infra/cryptography"
 	"main/services/audit"
-	"main/services/cryptography"
 )
 
 type Message struct {

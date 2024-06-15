@@ -4,8 +4,8 @@ package user
 
 import (
 	"context"
-	"main/infrastructure"
-	"main/services/cryptography"
+	"main/infra/cryptography"
+	"main/infra/store"
 	"strconv"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,7 +18,7 @@ type UserService interface {
 	PostUser(user User) User
 }
 
-var repository = infrastructure.NewRepo("users")
+var repository = store.NewRepo("users")
 
 func GetUsers(id string, name string, size string) []User {
 	var users []User = []User{}
@@ -37,7 +37,7 @@ func GetUsers(id string, name string, size string) []User {
 		}
 		options.SetLimit(limit)
 		options.SetSort(bson.M{"$natural": -1})
-		list, err := repository.Find(context.TODO(), bson.D{{}}, options)
+		list, err := repository.Find(bson.D{{}}, options)
 		if err != nil && err != mongo.ErrNoDocuments {
 			panic(err)
 		} else {
@@ -58,14 +58,14 @@ func GetUser(id string, name string) User {
 	var user User = User{}
 	if id != "" {
 		filterWithId := bson.D{{Key: "id", Value: id}}
-		cur, err := repository.FindOne(context.TODO(), filterWithId, nil)
+		cur, err := repository.FindOne(filterWithId, nil)
 		if cur != nil && err == nil {
 			cur.Decode(&user)
 		}
 	}
 	if name != "" {
 		filterWithName := bson.D{{Key: "name", Value: name}}
-		cur, err := repository.FindOne(context.TODO(), filterWithName, nil)
+		cur, err := repository.FindOne(filterWithName, nil)
 		if cur != nil && err == nil {
 			cur.Decode(&user)
 		}
@@ -76,14 +76,14 @@ func GetUser(id string, name string) User {
 func PostUser(user User) User {
 	checkUserValidity(user)
 	builtUser := buildUser(user)
-	repository.InsertOne(context.TODO(), builtUser)
+	repository.InsertOne(builtUser)
 	return builtUser
 }
 
 // Pre user registration:
 func checkUserValidity(user User) {
 	filter := bson.D{{Key: "name", Value: user.Name}}
-	cur, _ := repository.FindOne(context.TODO(), filter, nil)
+	cur, _ := repository.FindOne(filter, nil)
 	if cur != nil {
 		var duplicateUser User
 		cur.Decode(&duplicateUser)
@@ -96,7 +96,7 @@ func buildUser(user User) User {
 	var lastRecord User = User{}
 	var newUserId int
 	options := options.FindOne().SetSort(bson.M{"$natural": -1})
-	res, err := repository.FindOne(context.TODO(), bson.M{}, options)
+	res, err := repository.FindOne(bson.M{}, options)
 	if res == nil && err == nil {
 		// No user is found in the DB,
 		// Generate a default id:

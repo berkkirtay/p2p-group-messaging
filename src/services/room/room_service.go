@@ -4,9 +4,9 @@ package room
 
 import (
 	"context"
-	"main/infrastructure"
+	"main/infra/cryptography"
+	"main/infra/store"
 	"main/services/audit"
-	"main/services/cryptography"
 	"slices"
 	"strconv"
 	"time"
@@ -27,7 +27,7 @@ type RoomService interface {
 	BanUser(roomId string, userId string, userToBeBanned string) bool
 }
 
-var repository = infrastructure.NewRepo("rooms")
+var repository = store.NewRepo("rooms")
 
 func GetRooms(id string, size string) []Room {
 	var rooms []Room = []Room{}
@@ -35,7 +35,7 @@ func GetRooms(id string, size string) []Room {
 	if id != "" {
 		var room Room
 		filter := bson.D{{Key: "id", Value: id}}
-		cur, err := repository.FindOne(context.TODO(), filter, nil)
+		cur, err := repository.FindOne(filter, nil)
 		if cur != nil && err == nil {
 			cur.Decode(&room)
 			rooms = append(rooms, room)
@@ -50,7 +50,7 @@ func GetRooms(id string, size string) []Room {
 		}
 		options.SetLimit(limit)
 		options.SetSort(bson.M{"$natural": -1})
-		list, err := repository.Find(context.TODO(), bson.D{{}}, options)
+		list, err := repository.Find(bson.D{{}}, options)
 		if err != nil && err != mongo.ErrNoDocuments {
 			panic(err)
 		} else {
@@ -71,7 +71,7 @@ func PostRoom(room Room) Room {
 	var newRoomId int
 	var lastRecord Room = Room{}
 	options := options.FindOne().SetSort(bson.M{"$natural": -1})
-	res, err := repository.FindOne(context.TODO(), bson.M{}, options)
+	res, err := repository.FindOne(bson.M{}, options)
 	if res == nil && err == nil {
 		newRoomId = 12345
 	} else {
@@ -89,7 +89,7 @@ func PostRoom(room Room) Room {
 		WithSignature(nil),
 		WithAudit(audit.CreateAuditForRoom()))
 
-	repository.InsertOne(context.TODO(), createdRoom)
+	repository.InsertOne(createdRoom)
 	return createdRoom
 }
 
@@ -104,7 +104,7 @@ func UpdateRoom(id string, room Room) Room {
 func JoinRoom(id string, room Room, userId string) Room {
 	var actualRoom Room
 	filter := bson.D{{Key: "id", Value: id}}
-	cur, err := repository.FindOne(context.TODO(), filter, nil)
+	cur, err := repository.FindOne(filter, nil)
 	if cur != nil && err == nil {
 		cur.Decode(&actualRoom)
 	}
@@ -141,7 +141,7 @@ func JoinRoom(id string, room Room, userId string) Room {
 func LeaveRoom(id string, userId string) bool {
 	var actualRoom Room
 	filter := bson.D{{Key: "id", Value: id}}
-	cur, err := repository.FindOne(context.TODO(), filter, nil)
+	cur, err := repository.FindOne(filter, nil)
 	if cur != nil && err == nil {
 		cur.Decode(&actualRoom)
 	}

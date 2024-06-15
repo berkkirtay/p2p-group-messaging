@@ -3,8 +3,8 @@
 package room
 
 import (
+	"main/infra/cryptography"
 	"main/services/audit"
-	"main/services/cryptography"
 )
 
 // Reminder: Owner of the room can be verified easily by checking the signature.

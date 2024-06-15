@@ -2,16 +2,56 @@
 
 package commands
 
-import "main/services/peer"
+import (
+	"encoding/json"
+	"fmt"
+	"main/infra/http"
+	"main/services/peer"
+)
 
-var currentPeer peer.Peer
-var api string
+var assignedPeer peer.Peer
 
-func InitializePeer(peer peer.Peer) {
-	currentPeer = peer
-	api = peer.Address
+func InitializeAMasterPeer(hostname string, address string) {
+	assignedPeer = peer.CreatePeer(
+		peer.WithHostname(hostname),
+		peer.WithAddress(address),
+		peer.WithRole(peer.INBOUND))
+	peer.PostPeer(assignedPeer)
 }
 
-func GetCurrentPeer() peer.Peer {
-	return currentPeer
+func RegisterPeer(targetAddress string, hostname string, address string) {
+	var newPeer peer.Peer = peer.CreatePeer(
+		peer.WithHostname(hostname),
+		peer.WithAddress(address),
+		peer.WithRole(peer.OUTBOUND))
+	body, err := json.Marshal(newPeer)
+	if err != nil {
+		panic("err")
+
+	}
+	res := http.POST(targetAddress+"/peer", string(body), &newPeer)
+	if res.StatusCode != 201 {
+		fmt.Println(res)
+		panic("err")
+	}
+	peer.PostPeer(peer.CreatePeer(
+		peer.WithPeer(newPeer),
+		peer.WithRole(peer.INBOUND)))
+}
+
+func DeletePeer(peer.Peer) {
+	res := http.DELETE(assignedPeer.Address+"/peer", nil, "hostId", assignedPeer.Hostname)
+	if res.StatusCode != 200 {
+		fmt.Printf("Error removing the peer.")
+	}
+}
+
+func IsPeerInitialized() bool {
+	var currentPeers []peer.Peer = peer.GetPeers()
+	for _, currentPeer := range currentPeers {
+		if currentPeer.Role == peer.OUTBOUND {
+			assignedPeer = currentPeer
+		}
+	}
+	return assignedPeer.Address != ""
 }

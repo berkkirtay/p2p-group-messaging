@@ -15,5 +15,5 @@ func StartNode() {
 	middlewares.InitializeSession(app)
 	router := app.Group(API)
 	middlewares.InitializeRouters(router)
-	app.Run(ADDRESS)
+	go app.Run(ADDRESS)
 }

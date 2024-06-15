@@ -5,8 +5,8 @@ package commands
 import (
 	"encoding/json"
 	"fmt"
-	"main/services/cryptography"
-	"main/services/http"
+	"main/infra/cryptography"
+	"main/infra/http"
 	"main/services/room"
 	"main/services/user"
 	"strconv"
@@ -20,7 +20,7 @@ var retrieveTextsFlag bool = true
 var lastId string
 
 func HandleGetRooms() {
-	url := api + "/api/room"
+	url := assignedPeer.Address + "/room"
 	var rooms = make([]room.Room, 5)
 	var res = http.GET(url, &rooms, "size", "5")
 	if res.StatusCode != 200 {
@@ -55,7 +55,7 @@ func HandleCreateRoom(command []string) {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	res := http.POST(api+"/api/room", string(body), &room)
+	res := http.POST(assignedPeer.Address+"/room", string(body), &room)
 	if res.StatusCode != 201 {
 		fmt.Printf("Error")
 		return
@@ -71,7 +71,7 @@ func HandleJoinRoom(command []string, user user.User) {
 }
 
 func joinRoom(roomId string, roomPassword string) {
-	url := api + "/api/room/join"
+	url := assignedPeer.Address + "/room/join"
 	var room = room.CreateRoom(
 		room.WithId(roomId),
 		room.WithPassword(roomPassword))
@@ -90,7 +90,7 @@ func joinRoom(roomId string, roomPassword string) {
 	roomUsers = make(map[string]user.User)
 	for _, userId := range room.Members {
 		var userBody = []user.User{}
-		var res = http.GET(api+"/api/users", &userBody, "id", userId)
+		var res = http.GET(assignedPeer.Address+"/users", &userBody, "id", userId)
 		if res.StatusCode != 200 {
 			fmt.Printf("Error")
 			return
@@ -101,7 +101,7 @@ func joinRoom(roomId string, roomPassword string) {
 }
 
 func HandleText(command string) {
-	url := api + "/api/room/messages"
+	url := assignedPeer.Address + "/room/messages"
 	var message room.Message = room.CreateMessage(
 		room.WithText(cryptography.Encrypt(command, currentRoom.HandshakeKey)),
 		room.WithIsEncrypted(true))
@@ -130,7 +130,7 @@ func retrieveTexts() {
 }
 
 func getTexts() {
-	url := api + "/api/room/messages"
+	url := assignedPeer.Address + "/room/messages"
 	var messages = []room.Message{}
 	res := http.GET(url, &messages, "id", currentRoom.Id, "size", "1")
 	if res.StatusCode == 200 && len(messages) > 0 &&

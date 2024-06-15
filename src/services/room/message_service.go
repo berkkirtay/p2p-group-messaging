@@ -4,7 +4,7 @@ package room
 
 import (
 	"context"
-	"main/infrastructure"
+	"main/infra/store"
 	"main/services/audit"
 	"slices"
 	"strconv"
@@ -16,6 +16,7 @@ import (
 
 /*
  * Basic messaging service on HTTP.
+ *
  * This implementation uses permanent persistence of room instances.
  * Whereas in P2P implementation, a room can only be run by a peer.
  * The peers must be part of the room members to be able to host the
@@ -28,7 +29,7 @@ type MessageService interface {
 	DeleteAMessage(id string, userId string, message string) Message
 }
 
-var messageRepository = infrastructure.NewRepo("messaging")
+var messageRepository = store.NewRepo("messaging")
 var cachedRoom Room
 
 func ReceiveMessages(id string, size string, userId string) []Message {
@@ -50,7 +51,7 @@ func ReceiveMessages(id string, size string, userId string) []Message {
 	options.SetLimit(limit)
 	options.SetSort(bson.M{"$natural": -1})
 	filter := bson.D{{Key: "roomId", Value: id}}
-	list, err := messageRepository.Find(context.TODO(), filter, options)
+	list, err := messageRepository.Find(filter, options)
 	if err != nil && err != mongo.ErrNoDocuments {
 		panic(err)
 	} else {
@@ -75,7 +76,7 @@ func SendAMessage(id string, userId string, message Message) Message {
 
 	// Build and send the message:
 	var builtMessage Message = buildAMessage(room, userId, message)
-	messageRepository.InsertOne(context.TODO(), builtMessage)
+	messageRepository.InsertOne(builtMessage)
 	return builtMessage
 }
 
@@ -84,7 +85,7 @@ func fetchTargetRoom(id string) Room {
 		return cachedRoom
 	}
 	filter := bson.D{{Key: "id", Value: id}}
-	cur, err := repository.FindOne(context.TODO(), filter, nil)
+	cur, err := repository.FindOne(filter, nil)
 	if cur != nil && err == nil {
 		cur.Decode(&cachedRoom)
 	}
@@ -101,7 +102,7 @@ func buildAMessage(room Room, userId string, message Message) Message {
 	var lastRecord Message = Message{}
 	var newMessageId int
 	options := options.FindOne().SetSort(bson.M{"$natural": -1})
-	res, err := messageRepository.FindOne(context.TODO(), bson.M{}, options)
+	res, err := messageRepository.FindOne(bson.M{}, options)
 	if res == nil && err == nil {
 		// No message is found in the DB,
 		// Generate a default id:

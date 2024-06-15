@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Berk Kirtay
 
-package infrastructure
+package store
 
 import (
 	"context"
