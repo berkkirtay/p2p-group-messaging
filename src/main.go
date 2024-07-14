@@ -12,8 +12,8 @@ const (
 )
 
 func main() {
-	p2p.HandlePeerConnection()
 	p2p.StartNode()
+	p2p.HandlePeerConnection()
 	p2p.StartClient()
 }
 

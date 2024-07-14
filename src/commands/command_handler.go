@@ -5,13 +5,12 @@ package commands
 import (
 	"bufio"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 )
 
 const (
-	AVAILABLE_COMMANDS string = "register\nlogin\nget-rooms\ncreate-room\njoin-room\nexit-room\nwhoami\nkick {user-name}"
+	AVAILABLE_COMMANDS string = "register\nlogin\nget-rooms\ncreate-room\njoin-room\nexit-room\nkick {user-name}"
 	ROOM_MODE          string = "ROOM"
 	COMMAND_MODE       string = "COMMAND"
 )
@@ -19,13 +18,6 @@ const (
 var currentMode string
 
 func InitializeCommandLine() {
-	resp, err := http.Get(assignedPeer.Address + "/peer")
-	if err != nil {
-		panic(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		panic("Connection to a peer could not be initialized.")
-	}
 	fmt.Printf("A master peer is initialized: %s\n", assignedPeer.Hostname)
 	fmt.Println("To see available commands, please type 'help'.")
 	currentMode = COMMAND_MODE
@@ -51,7 +43,6 @@ func HandleInput() {
 			handleRoom(text)
 		}
 	}
-
 }
 
 func handleCommand(command string) {
@@ -68,8 +59,6 @@ func handleCommand(command string) {
 	case "join-room":
 		currentMode = ROOM_MODE
 		HandleJoinRoom(inputs, CurrentUser)
-	case "whoami":
-		HandleWhoAmI()
 	case "help":
 		fmt.Println("Available commands are:")
 		fmt.Println(AVAILABLE_COMMANDS)

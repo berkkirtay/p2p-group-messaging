@@ -15,6 +15,14 @@ import (
  * Service to make HTTP requests. Handles session cookies upon user authentication.
  */
 
+const (
+	OK                    = 200
+	CREATED               = 201
+	ACCEPTED              = 202
+	NOT_FOUND             = 404
+	INTERNAL_SERVER_ERROR = 500
+)
+
 var sessionHeader HeaderModel
 var client *http.Client
 
@@ -50,7 +58,7 @@ func GET(path string, respType interface{}, params ...string) *http.Response {
 	prepareHeadersForRequest(req)
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return res
 	}
 	defer res.Body.Close()
 
@@ -91,7 +99,7 @@ func POST(path string, payload string, respType interface{}, params ...string) *
 		panic(err)
 	}
 	if body == nil {
-		panic(err)
+		return res
 	}
 	if len(body) != 0 {
 		err = json.Unmarshal(body, &respType)

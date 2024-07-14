@@ -32,7 +32,7 @@ func createRoom(c *gin.Context) {
 
 func deleteRooms(c *gin.Context) {
 	res := room.DeleteRooms(strings.Split(c.Query("id"), "&"))
-	if len(res) == 0 {
+	if res == 0 {
 		c.JSON(http.StatusNotFound, res)
 	} else {
 		c.JSON(http.StatusOK, res)
@@ -74,7 +74,7 @@ func leaveRoom(c *gin.Context) {
 }
 
 func receiveMessagesHTTP(c *gin.Context) {
-	res := room.ReceiveMessages(c.Query("id"), c.Query("size"), c.Request.Header.Get("Session"))
+	res := room.ReceiveMessages(c.Query("id"), c.Query("size"), c.Query("sort"), c.Request.Header.Get("Session"))
 	if len(res) == 0 {
 		c.JSON(http.StatusNotFound, res)
 	} else {

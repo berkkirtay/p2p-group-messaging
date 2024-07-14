@@ -32,7 +32,7 @@ type MessageService interface {
 var messageRepository = store.NewRepo("messaging")
 var cachedRoom Room
 
-func ReceiveMessages(id string, size string, userId string) []Message {
+func ReceiveMessages(id string, size string, sort string, userId string) []Message {
 	var messages []Message = []Message{}
 	var room Room = fetchTargetRoom(id)
 	// Check if the user is in the room:
@@ -49,7 +49,11 @@ func ReceiveMessages(id string, size string, userId string) []Message {
 		limit, _ = strconv.ParseInt(size, 10, 64)
 	}
 	options.SetLimit(limit)
-	options.SetSort(bson.M{"$natural": -1})
+	var sortValue int64 = -1
+	if sort == "true" {
+		sortValue = 1
+	}
+	options.SetSort(bson.M{"$natural": sortValue})
 	filter := bson.D{{Key: "roomId", Value: id}}
 	list, err := messageRepository.Find(filter, options)
 	if err != nil && err != mongo.ErrNoDocuments {

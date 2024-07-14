@@ -25,7 +25,7 @@ import (
  */
 
 const (
-	LOCAL_BROADCAST_ADDRESS string = "224.0.0.0:9999"
+	LOCAL_BROADCAST_ADDRESS string = "224.0.0.1:9999"
 	NETWORK_NAME            string = "udp4"
 	MAX_BROADCAST_AMOUNT    int    = 5
 	ADDRESS_FORMAT          string = HTTP + "%s" + PORT + API
@@ -35,14 +35,10 @@ var unique_udp_request_identifier int = 0
 var currentHost string = ""
 
 func HandlePeerConnection() {
-	findPreferredOutboundIP()
+	initializeOutboundIP()
 	generateNextConnectionIdentifier()
 	go listenForPeerBroadcast()
 	startPeerBroadcast()
-	if !commands.IsPeerInitialized() {
-		fmt.Println("No active peer found, making yourself an active peer.")
-		commands.InitializeAMasterPeer(currentHost, fmt.Sprintf(ADDRESS_FORMAT, currentHost))
-	}
 }
 
 func startPeerBroadcast() {
@@ -68,11 +64,15 @@ func startPeerBroadcast() {
 		}
 		time.Sleep(1 * time.Second)
 	}
+
+	// Become a main peer in case no other peer exists:
+	fmt.Println("No active peer found, making yourself an active peer.")
+	commands.InitializeAMasterPeer(currentHost, fmt.Sprintf(ADDRESS_FORMAT, currentHost))
 }
 
 func listenForPeerBroadcast() {
 	ipv4Addr, _ := net.ResolveUDPAddr(NETWORK_NAME, LOCAL_BROADCAST_ADDRESS)
-	conn, err := net.ListenUDP("udp4", ipv4Addr)
+	conn, err := net.ListenUDP(NETWORK_NAME, ipv4Addr)
 	if err != nil {
 		panic(err)
 	}
@@ -98,7 +98,7 @@ func listenForPeerBroadcast() {
 	for {
 		n, addr, err := conn.ReadFrom(buf)
 		if err == nil {
-			// post your peer info to the sender and conclude broadcasting here
+			// Send your peer info to the sender and conclude broadcasting:
 			var remote_udp_request_identifier, _ = strconv.Atoi(string(buf[:n]))
 			if remote_udp_request_identifier != unique_udp_request_identifier {
 				var targetAddress string = fmt.Sprintf(ADDRESS_FORMAT, strings.Split(addr.String(), ":")[0])
@@ -111,7 +111,7 @@ func listenForPeerBroadcast() {
 	}
 }
 
-func findPreferredOutboundIP() {
+func initializeOutboundIP() {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		panic(err)

@@ -29,7 +29,7 @@ func HandleLogin(command []string) {
 	respBody := make([]user.User, 1)
 	res := http.GET(assignedPeer.Address+"/users", &respBody, "id", userLogin, "name", userLogin)
 
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.OK {
 		fmt.Printf("User %s does not exist.\n", userLogin)
 		return
 	}
@@ -60,11 +60,7 @@ func login(authenticationModel *auth.AuthenticationModel) {
 	}
 
 	res := http.POST(assignedPeer.Address+"/auth", string(body), &authenticationModel)
-	if res.StatusCode == 202 {
+	if res.StatusCode == http.ACCEPTED {
 		authenticationModel.Cookies = res.Cookies()
 	}
-}
-
-func HandleWhoAmI() {
-
 }

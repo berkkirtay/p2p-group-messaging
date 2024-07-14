@@ -30,7 +30,7 @@ func RegisterPeer(targetAddress string, hostname string, address string) {
 
 	}
 	res := http.POST(targetAddress+"/peer", string(body), &newPeer)
-	if res.StatusCode != 201 {
+	if res.StatusCode != http.CREATED {
 		fmt.Println(res)
 		panic("err")
 	}
@@ -41,7 +41,7 @@ func RegisterPeer(targetAddress string, hostname string, address string) {
 
 func DeletePeer(peer.Peer) {
 	res := http.DELETE(assignedPeer.Address+"/peer", nil, "hostId", assignedPeer.Hostname)
-	if res.StatusCode != 200 {
+	if res.StatusCode != http.OK {
 		fmt.Printf("Error removing the peer.")
 	}
 }
@@ -49,9 +49,18 @@ func DeletePeer(peer.Peer) {
 func IsPeerInitialized() bool {
 	var currentPeers []peer.Peer = peer.GetPeers()
 	for _, currentPeer := range currentPeers {
-		if currentPeer.Role == peer.OUTBOUND {
+		if currentPeer.Role == peer.OUTBOUND && isPeerOnline(currentPeer) {
 			assignedPeer = currentPeer
 		}
 	}
 	return assignedPeer.Address != ""
+}
+
+func isPeerOnline(peer peer.Peer) bool {
+	res := http.GET(peer.Address+"/peer", nil)
+	if res == nil || (res != nil && res.StatusCode != http.OK) {
+		fmt.Printf("Peer %s is offline.\n", peer.Hostname)
+		return false
+	}
+	return true
 }

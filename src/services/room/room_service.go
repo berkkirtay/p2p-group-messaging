@@ -38,6 +38,7 @@ func GetRooms(id string, size string) []Room {
 		cur, err := repository.FindOne(filter, nil)
 		if cur != nil && err == nil {
 			cur.Decode(&room)
+			room.Password = ""
 			rooms = append(rooms, room)
 		}
 	} else {
@@ -60,6 +61,7 @@ func GetRooms(id string, size string) []Room {
 				if err != nil {
 					panic(err)
 				}
+				currentRoom.Password = ""
 				rooms = append(rooms, currentRoom)
 			}
 		}
@@ -93,8 +95,14 @@ func PostRoom(room Room) Room {
 	return createdRoom
 }
 
-func DeleteRooms(ids []string) []Room {
-	return nil
+func DeleteRooms(ids []string) int64 {
+	var deletedCount int64 = 0
+	for _, id := range ids {
+		filter := bson.D{{Key: "id", Value: id}}
+		res, _ := repository.DeleteOne(filter, nil)
+		deletedCount += res.DeletedCount
+	}
+	return deletedCount
 }
 
 func UpdateRoom(id string, room Room) Room {
