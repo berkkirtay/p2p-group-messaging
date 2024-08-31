@@ -27,7 +27,7 @@ import (
 const (
 	LOCAL_BROADCAST_ADDRESS string = "224.0.0.1:9999"
 	NETWORK_NAME            string = "udp4"
-	MAX_BROADCAST_AMOUNT    int    = 5
+	MAX_BROADCAST_AMOUNT    int    = 1
 	ADDRESS_FORMAT          string = HTTP + "%s" + PORT + API
 )
 

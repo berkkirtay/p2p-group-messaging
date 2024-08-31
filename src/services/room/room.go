@@ -19,8 +19,7 @@ type Room struct {
 	Signature        *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
 	Audit            *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
 	DiffieHelmanKeys map[string]string       `json:"-"`
-	RoomMasterKey    string                  `json:"-"`
-	HandshakeKey     string                  `json:"handshakeKey,omitempty" bson:"handshakeKey,omitempty"`
+	RoomMasterKey    string                  `json:"roomMasterKey,omitempty" bson:"roomMasterKey,omitempty`
 }
 
 type RoomOption func(Room) Room
@@ -91,13 +90,6 @@ func WithDiffieHelmanKeys(masterKeys map[string]string) RoomOption {
 func WithRoomMasterKey(roomMasterKey string) RoomOption {
 	return func(room Room) Room {
 		room.RoomMasterKey = roomMasterKey
-		return room
-	}
-}
-
-func WithHandshakeKey(handshakeKey string) RoomOption {
-	return func(room Room) Room {
-		room.HandshakeKey = handshakeKey
 		return room
 	}
 }

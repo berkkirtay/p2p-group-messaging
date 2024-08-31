@@ -7,9 +7,12 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"crypto/rsa"
+	"crypto/sha256"
+	"crypto/x509"
 	b64 "encoding/base64"
+	"encoding/pem"
 	"io"
-	"math"
 	"math/big"
 	"strconv"
 	"time"
@@ -17,81 +20,147 @@ import (
 	"github.com/zenazn/pkcs7pad"
 )
 
-const p float64 = 23
-const g float64 = 5
-
-var publicKey string
-var privateKey string
-
-func InitializeService() {
-	// rand.Prime()
-}
+const (
+	RSA_KEY_SIZE = 2048
+)
 
 // TODO area.
-func CreateDefaultCrypto(keyPair string, values ...interface{}) *Signature {
-	hash, nonce := generateHash(values)
-	return CreateSignature(WithPublicKey(keyPair),
+func CreateDefaultCrypto(values ...string) *Signature {
+	hash := GenerateSHA256([]string(values))
+	nonce := int64(12312) // TODO
+	privateKey, publicKey := GenerateKeyPair()
+	return CreateSignature(
+		WithPublicKey(publicKey),
+		WithPrivateKey(privateKey),
 		WithHash(hash),
 		WithNonce(nonce),
-		WithSign(generateSignature(keyPair, hash)),
+		WithSign(generateSignature(privateKey, hash)),
 		WithTimestamp(time.Now().Format(time.RFC1123)))
 }
 
-func generateHash(values []interface{}) (string, int64) {
-	return values[0].(string), 1
+func generateSignature(privateKey string, data string) string {
+	decodedKey, err := b64.StdEncoding.DecodeString(privateKey)
+	if err != nil {
+		panic(err)
+	}
+	decodedBlock, _ := pem.Decode(decodedKey)
+
+	key, err := x509.ParsePKCS1PrivateKey(decodedBlock.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	calculatedHash := sha256.Sum256([]byte(data))
+	signature, err := rsa.SignPKCS1v15(
+		rand.Reader,
+		key,
+		crypto.SHA256,
+		calculatedHash[:],
+	)
+	if err != nil {
+		panic(err)
+	}
+	return b64.StdEncoding.EncodeToString(signature)
 }
 
-func generateSignature(keyPair string, hash string) string {
-	return hash
+func VerifySignature(data string, signature string, publicKey string) {
+	return
+}
+
+func GenerateSHA256(values []string) string {
+	sha256 := crypto.SHA256.New()
+	for _, value := range values {
+		sha256.Write([]byte(value))
+	}
+
+	hash := sha256.Sum(nil)[0:16]
+	encodedHash := b64.StdEncoding.EncodeToString(hash)
+	return encodedHash
 }
 
 func GenerateARandomMasterSecret() string {
-	sha256 := crypto.SHA256.New()
 	randValue, err := rand.Int(rand.Reader, big.NewInt(32))
 	if err != nil {
 		panic(err)
 	}
-
-	sha256.Write([]byte(strconv.FormatInt(randValue.Int64(), 10)))
-	randomSecret := sha256.Sum([]byte("secret"))[0:16]
-
-	encodedSecret := b64.StdEncoding.EncodeToString([]byte(randomSecret))
-	return encodedSecret
+	return GenerateSHA256([]string{strconv.FormatInt(randValue.Int64(), 10)})
 }
 
-func ServerSideDiffieHelmanKeyExhange(
-	clientSecret string) []string {
-	computedSecretOfClient, err := strconv.Atoi(clientSecret)
+func EnrichMasterSecret(secret string, hash string) string {
+	randValue, err := rand.Int(rand.Reader, big.NewInt(32))
 	if err != nil {
 		panic(err)
 	}
-	computedSecretOfServer, err := strconv.Atoi(privateKey)
+	return GenerateSHA256(
+		[]string{
+			strconv.FormatInt(randValue.Int64(), 10),
+			secret,
+			hash},
+	)
+}
+
+func GenerateKeyPair(salts ...string) (string, string) {
+	keyPair, err := rsa.GenerateKey(rand.Reader, RSA_KEY_SIZE)
 	if err != nil {
 		panic(err)
 	}
-	commonSecretKey := math.Mod(math.Pow(float64(computedSecretOfClient), float64(computedSecretOfServer)), p)
-	serverSecret := math.Mod(math.Pow(g, float64(computedSecretOfServer)), p)
-	return []string{strconv.FormatFloat(commonSecretKey, 'f', -1, 64), strconv.FormatFloat(serverSecret, 'f', -1, 64)}
+
+	err = keyPair.Validate()
+	if err != nil {
+		panic(err)
+	}
+
+	encodedPrivateKey := b64.StdEncoding.EncodeToString(
+		pem.EncodeToMemory(&pem.Block{Bytes: x509.MarshalPKCS1PrivateKey(keyPair)}))
+
+	encodedPublicKey := b64.StdEncoding.EncodeToString(
+		pem.EncodeToMemory(&pem.Block{Bytes: x509.MarshalPKCS1PublicKey(&keyPair.PublicKey)}))
+	return encodedPrivateKey, encodedPublicKey
 }
 
-func PeerToPeerDiffieHelmanKeyExhange(p float64, g float64, privateKeys ...string) []string {
-	combinedKeys := []string{}
-	columns := []float64{}
-	for _, privateKey := range privateKeys {
-		secret, err := strconv.Atoi(privateKey)
-		if err != nil {
-			panic(err)
-		}
-		columns = append(columns, math.Mod(math.Pow(g, float64(secret)), p))
+func EncryptRSA(data string, publicKey string) string {
+	decodedKey, err := b64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		panic(err)
 	}
-	return combinedKeys
+	decodedBlock, _ := pem.Decode(decodedKey)
+
+	key, err := x509.ParsePKCS1PublicKey(decodedBlock.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	ciperText, err := rsa.EncryptOAEP(sha256.New(), rand.Reader, key, []byte(data), nil)
+	if err != nil {
+		panic(err)
+	}
+	return b64.StdEncoding.EncodeToString(ciperText)
+}
+
+func DecryptRSA(data string, privateKey string) string {
+	decodedData, err := b64.StdEncoding.DecodeString(data)
+	if err != nil {
+		panic(err)
+	}
+	decodedKey, err := b64.StdEncoding.DecodeString(privateKey)
+	if err != nil {
+		panic(err)
+	}
+	decodedBlock, _ := pem.Decode(decodedKey)
+	key, err := x509.ParsePKCS1PrivateKey(decodedBlock.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	plainText, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, key, decodedData, nil)
+	if err != nil {
+		panic(err)
+	}
+	return string(plainText)
 }
 
 /*
  * Encryption functions take a string (preferably as base64) as input
- *  and returns an encrypted/decrypted string conventionally.
+ * and returns an encrypted/decrypted string conventionally.
  */
-func Encrypt(message string, key string) string {
+func EncryptAES(message string, key string) string {
 	decodedKey, _ := b64.StdEncoding.DecodeString(key)
 	encryptor, err := aes.NewCipher(decodedKey)
 	if err != nil {
@@ -110,7 +179,7 @@ func Encrypt(message string, key string) string {
 	return b64.StdEncoding.EncodeToString(ciphertext)
 }
 
-func Decrypt(cipherText string, key string) string {
+func DecryptAES(cipherText string, key string) string {
 	decodedCipherText, _ := b64.StdEncoding.DecodeString(cipherText)
 	decodedKey, _ := b64.StdEncoding.DecodeString(key)
 	decryptor, err := aes.NewCipher(decodedKey)

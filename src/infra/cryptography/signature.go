@@ -3,11 +3,12 @@
 package cryptography
 
 type Signature struct {
-	Sign      string `json:"sign,omitempty" bson:"sign,omitempty"`
-	PublicKey string `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
-	Nonce     int64  `json:"nonce,omitempty" bson:"nonce,omitempty"`
-	Timestamp string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
-	Hash      string `json:"hash,omitempty" bson:"hash,omitempty"`
+	Sign       string `json:"sign,omitempty" bson:"sign,omitempty"`
+	PublicKey  string `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
+	PrivateKey string `json:"privateKey,omitempty" bson:"privateKey,omitempty"`
+	Nonce      int64  `json:"nonce,omitempty" bson:"nonce,omitempty"`
+	Timestamp  string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	Hash       string `json:"hash,omitempty" bson:"hash,omitempty"`
 }
 
 type SignatureOption func(Signature) Signature
@@ -22,6 +23,13 @@ func WithSign(sign string) SignatureOption {
 func WithPublicKey(publicKey string) SignatureOption {
 	return func(signature Signature) Signature {
 		signature.PublicKey = publicKey
+		return signature
+	}
+}
+
+func WithPrivateKey(privateKey string) SignatureOption {
+	return func(signature Signature) Signature {
+		signature.PrivateKey = privateKey
 		return signature
 	}
 }

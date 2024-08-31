@@ -68,7 +68,7 @@ func HandleCreateRoom(command []string) {
 func HandleText(command string) {
 	url := assignedPeer.Address + "/room/messages"
 	var message room.Message = room.CreateMessage(
-		room.WithText(cryptography.Encrypt(command, currentRoom.HandshakeKey)),
+		room.WithText(cryptography.EncryptAES(command, currentRoom.RoomMasterKey)),
 		room.WithIsEncrypted(true))
 	body, err := json.Marshal(message)
 	if err != nil {
@@ -107,6 +107,9 @@ func joinRoom(roomId string, roomPassword string) {
 		return
 	}
 	currentRoom = room
+	currentRoom.RoomMasterKey = cryptography.DecryptRSA(
+		currentRoom.RoomMasterKey, currentUser.Signature.PrivateKey)
+
 	fmt.Printf("Joined the room. You will talk with:\n")
 	roomUsers = make(map[string]user.User)
 	for _, userId := range room.Members {
@@ -183,7 +186,7 @@ func fetchLastMessageId() int64 {
 
 func buildAReadableText(message room.Message) string {
 	if message.IsEncrypted {
-		return cryptography.Decrypt(message.Text, currentRoom.HandshakeKey)
+		return cryptography.DecryptAES(message.Text, currentRoom.RoomMasterKey)
 	} else {
 		return message.Text
 	}

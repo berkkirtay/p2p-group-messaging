@@ -105,14 +105,15 @@ func buildUser(user User) User {
 		res.Decode(&lastRecord)
 		newUserId, _ = strconv.Atoi(lastRecord.Id)
 	}
+	cryptography.GenerateKeyPair()
 	return CreateUser(
 		WithId(strconv.Itoa(newUserId+1)),
 		WithName(user.Name),
 		WithPassword(user.Password),
 		WithRole(user.Role),
 		WithSignature(cryptography.CreateDefaultCrypto(
-			"keyPair",
 			user.Name,
+			user.Password,
 			user.Role)),
 		WithActions(nil),
 		WithAudit(user.Audit))

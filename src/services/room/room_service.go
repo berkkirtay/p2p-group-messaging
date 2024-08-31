@@ -7,6 +7,7 @@ import (
 	"main/infra/cryptography"
 	"main/infra/store"
 	"main/services/audit"
+	"main/services/user"
 	"slices"
 	"strconv"
 	"time"
@@ -39,6 +40,7 @@ func GetRooms(id string, size string) []Room {
 		if cur != nil && err == nil {
 			cur.Decode(&room)
 			room.Password = ""
+			room.RoomMasterKey = ""
 			rooms = append(rooms, room)
 		}
 	} else {
@@ -62,6 +64,7 @@ func GetRooms(id string, size string) []Room {
 					panic(err)
 				}
 				currentRoom.Password = ""
+				currentRoom.RoomMasterKey = ""
 				rooms = append(rooms, currentRoom)
 			}
 		}
@@ -88,7 +91,12 @@ func PostRoom(room Room) Room {
 		WithCapacity(room.Capacity),
 		WithMembers([]string{}),
 		WithRoomMasterKey(cryptography.GenerateARandomMasterSecret()),
-		WithSignature(nil),
+		WithSignature(cryptography.CreateDefaultCrypto(
+			room.Name,
+			room.Info,
+			room.Password,
+			room.RoomMasterKey,
+		)),
 		WithAudit(audit.CreateAuditForRoom()))
 
 	repository.InsertOne(createdRoom)
@@ -117,7 +125,10 @@ func JoinRoom(id string, room Room, userId string) Room {
 		cur.Decode(&actualRoom)
 	}
 
+	user := user.GetUser(userId, "")
+
 	if slices.Contains(actualRoom.Members, userId) {
+		actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Signature.PublicKey)
 		return actualRoom
 	}
 
@@ -132,8 +143,8 @@ func JoinRoom(id string, room Room, userId string) Room {
 
 	// masterSecret := cryptography.ServerSideDiffieHelmanKeyExhange(userHandshakeKey)
 	// actualRoom.DiffieHelmanKeys[userId] = masterSecret[0]
-	actualRoom.HandshakeKey = actualRoom.RoomMasterKey
 
+	//actualRoom.RoomMasterKey = cryptography.EnrichMasterSecret(actualRoom.RoomMasterKey, user.Signature.Hash)
 	actualRoom.Members = append(actualRoom.Members, userId)
 	actualRoom.Audit.LastOnlineDate = time.Now().Format(time.RFC1123)
 	actualRoom.Audit.NumberOfActions += 1
@@ -143,6 +154,8 @@ func JoinRoom(id string, room Room, userId string) Room {
 		return CreateDefaultRoom()
 	}
 	//	SendAMessage(id, userId, buildAMessage(room, userId, CreateMessage(WithText("Greetings! I just joined."))))
+	//TODO encrypt with users key pair :)
+	actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Signature.PublicKey)
 	return actualRoom
 }
 
