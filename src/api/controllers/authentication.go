@@ -17,20 +17,7 @@ func postAuthRequest(c *gin.Context) {
 	if err != nil {
 		panic(err)
 	}
-	var foundUser = user.GetUser(userBody.Id, userBody.Name)
-	if foundUser.Id == "" {
-		c.AbortWithStatus(http.StatusNotFound)
-		return
-	}
-	if foundUser.Password != userBody.Password {
-		c.AbortWithStatus(http.StatusUnauthorized)
-		return
-	}
-
-	res := auth.Authenticate(auth.CreateAuthenticationModel(
-		auth.WithId(foundUser.Id),
-		auth.WithName(foundUser.Name),
-		auth.WithPassword(foundUser.Password)), c)
+	res := auth.Authenticate(userBody, c)
 	if res.Token == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return

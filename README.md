@@ -10,7 +10,7 @@ Right now this is only a fun side project. Please contact me for any considerati
 - [x] HTTP based async messagging with DB synchronization among peers (requires improvement)
 - [ ] Diffie-hellman key exchange for p2p key agreement (requires improvement)
 - [x] CBC AES encryption for messages
-- [ ] RSA or Elliptic-curve based digital signature for verifications
+- [x] RSA or Elliptic-curve based digital signature for verifications
 - [ ] GUI usage instead of CLI
 
 ## Stack
@@ -22,3 +22,17 @@ Right now this is only a fun side project. Please contact me for any considerati
 ## Considerations
 - HTTP based room messaging can be replaced by a custom protocol such that peers can communicate over a small layer on top of TCP directly.
 - For production usage, as centralized lookup server can be developed for peers to connect each other over the web.
+- Old-school password based authentication requires an additional layer of encryption. To improve this point, authentication must be done with user signatures where peers validate each others signatures and hashes. This means every user should generate their own private keys and use them for communication with other peers.
+In this flow:
+
+1. A user passes a public key and a signature to a peer.
+
+2. The peer can validate the signature with the public key and generate a authentication token for the user. To pass this token, the peer can encrypt it with the users public key.
+
+3. The user can decrypt the encrypted authentication key with his private key and start sending requests to the peer.
+
+4. The user can send room and message requests and the peer encrypt the room secret keys to the user which is similar to the authentication key encryption. 
+
+5. The user can decrypt the room secret key (symmetric key) and use this key to encrypt and decrypt the messages in the room.
+
+6. Master peer can choose the renew the room master key and it can send a synchronization requests to the all users in a room. This would be easier to handle with UDP or WebSocket protocols.

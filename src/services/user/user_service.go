@@ -25,7 +25,7 @@ func GetUsers(id string, name string, size string) []User {
 	if id != "" || name != "" {
 		var user User = GetUser(id, name)
 		if user.Id != "" {
-			users = append(users, user)
+			users = append(users, hideUserCrypto(user))
 		}
 	} else {
 		options := options.Find()
@@ -47,7 +47,7 @@ func GetUsers(id string, name string, size string) []User {
 				if err != nil {
 					panic(err)
 				}
-				users = append(users, currentUser)
+				users = append(users, hideUserCrypto(currentUser))
 			}
 		}
 	}
@@ -105,18 +105,22 @@ func buildUser(user User) User {
 		res.Decode(&lastRecord)
 		newUserId, _ = strconv.Atoi(lastRecord.Id)
 	}
-	cryptography.GenerateKeyPair()
+	// Server side user key generation:
+	var userCrypto *cryptography.Cryptography = user.Cryptography
+	if !user.IsPeer {
+		userCrypto = cryptography.CreateCommonCrypto(
+			user.Name,
+			user.Role)
+	}
 	return CreateUser(
 		WithId(strconv.Itoa(newUserId+1)),
 		WithName(user.Name),
 		WithPassword(user.Password),
 		WithRole(user.Role),
-		WithSignature(cryptography.CreateDefaultCrypto(
-			user.Name,
-			user.Password,
-			user.Role)),
+		WithCryptography(userCrypto),
 		WithActions(nil),
-		WithAudit(user.Audit))
+		WithAudit(user.Audit),
+		WithIsPeer(user.IsPeer))
 }
 
 func PutUser(id string, user User) User {
@@ -126,4 +130,10 @@ func PutUser(id string, user User) User {
 
 func DeleteUser(id string) {
 
+}
+
+func hideUserCrypto(user User) User {
+	user.Password = ""
+	user.Cryptography = nil
+	return user
 }

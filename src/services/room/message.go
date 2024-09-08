@@ -8,13 +8,13 @@ import (
 )
 
 type Message struct {
-	Id          string                  `json:"id,omitempty" bson:"id,omitempty"`
-	UserId      string                  `json:"userId,omitempty" bson:"userId,omitempty"`
-	RoomId      string                  `json:"roomId,omitempty" bson:"roomId,omitempty"`
-	Text        string                  `json:"text,omitempty" bson:"text,omitempty"`
-	Signature   *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
-	IsEncrypted bool                    `json:"isEncrypted,omitempty" bson:"isEncrypted,omitempty"`
-	Audit       *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
+	Id          string                     `json:"id,omitempty" bson:"id,omitempty"`
+	UserId      string                     `json:"userId,omitempty" bson:"userId,omitempty"`
+	RoomId      string                     `json:"roomId,omitempty" bson:"roomId,omitempty"`
+	Text        string                     `json:"text,omitempty" bson:"text,omitempty"`
+	Signature   *cryptography.Cryptography `json:"signature,omitempty" bson:"signature,omitempty"`
+	IsEncrypted bool                       `json:"isEncrypted,omitempty" bson:"isEncrypted,omitempty"`
+	Audit       *audit.Audit               `json:"audit,omitempty" bson:"audit,omitempty"`
 }
 
 type MessageOption func(Message) Message
@@ -47,7 +47,7 @@ func WithText(text string) MessageOption {
 	}
 }
 
-func WithMessageSignature(signature *cryptography.Signature) MessageOption {
+func WithMessageSignature(signature *cryptography.Cryptography) MessageOption {
 	return func(message Message) Message {
 		message.Signature = signature
 		return message

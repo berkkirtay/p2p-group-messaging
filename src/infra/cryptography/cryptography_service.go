@@ -24,37 +24,34 @@ const (
 	RSA_KEY_SIZE = 2048
 )
 
-// TODO area.
-func CreateDefaultCrypto(values ...string) *Signature {
-	hash := GenerateSHA256([]string(values))
-	nonce := int64(12312) // TODO
-	privateKey, publicKey := GenerateKeyPair()
-	return CreateSignature(
+func CreateCommonCrypto(values ...string) *Cryptography {
+	hash := GenerateEncodedSHA256([]string(values))
+	privateKey, publicKey := generateKeyPair()
+	crypto := CreateCryptography(
 		WithPublicKey(publicKey),
 		WithPrivateKey(privateKey),
 		WithHash(hash),
-		WithNonce(nonce),
+		WithNonce(GenerateANonce()),
 		WithSign(generateSignature(privateKey, hash)),
 		WithTimestamp(time.Now().Format(time.RFC1123)))
+	return crypto
 }
 
-func generateSignature(privateKey string, data string) string {
+func generateSignature(privateKey string, hash string) string {
 	decodedKey, err := b64.StdEncoding.DecodeString(privateKey)
 	if err != nil {
 		panic(err)
 	}
 	decodedBlock, _ := pem.Decode(decodedKey)
-
 	key, err := x509.ParsePKCS1PrivateKey(decodedBlock.Bytes)
 	if err != nil {
 		panic(err)
 	}
-	calculatedHash := sha256.Sum256([]byte(data))
 	signature, err := rsa.SignPKCS1v15(
 		rand.Reader,
 		key,
 		crypto.SHA256,
-		calculatedHash[:],
+		decodeSHA256(hash),
 	)
 	if err != nil {
 		panic(err)
@@ -62,19 +59,45 @@ func generateSignature(privateKey string, data string) string {
 	return b64.StdEncoding.EncodeToString(signature)
 }
 
-func VerifySignature(data string, signature string, publicKey string) {
-	return
+func VerifySignature(data []string, signature string, publicKey string) bool {
+	decodedSignature, err := b64.StdEncoding.DecodeString(signature)
+	if err != nil {
+		panic(err)
+	}
+	decodedKey, err := b64.StdEncoding.DecodeString(publicKey)
+	if err != nil {
+		panic(err)
+	}
+	decodedBlock, _ := pem.Decode(decodedKey)
+	key, err := x509.ParsePKCS1PublicKey(decodedBlock.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	calculatedHash := generateSHA256Object(data)
+	err = rsa.VerifyPKCS1v15(key, crypto.SHA256, calculatedHash[:], decodedSignature)
+	return err == nil
 }
 
-func GenerateSHA256(values []string) string {
-	sha256 := crypto.SHA256.New()
-	for _, value := range values {
-		sha256.Write([]byte(value))
-	}
-
-	hash := sha256.Sum(nil)[0:16]
-	encodedHash := b64.StdEncoding.EncodeToString(hash)
+func GenerateEncodedSHA256(values []string) string {
+	hash := generateSHA256Object(values)
+	encodedHash := b64.StdEncoding.EncodeToString(hash[:])
 	return encodedHash
+}
+
+func decodeSHA256(hash string) []byte {
+	decodedHash, err := b64.StdEncoding.DecodeString(hash)
+	if err != nil {
+		panic(err)
+	}
+	return decodedHash
+}
+
+func generateSHA256Object(values []string) [32]byte {
+	var data []byte = []byte{}
+	for _, value := range values {
+		data = append(data, []byte(value)...)
+	}
+	return sha256.Sum256(data)
 }
 
 func GenerateARandomMasterSecret() string {
@@ -82,7 +105,7 @@ func GenerateARandomMasterSecret() string {
 	if err != nil {
 		panic(err)
 	}
-	return GenerateSHA256([]string{strconv.FormatInt(randValue.Int64(), 10)})
+	return GenerateEncodedSHA256([]string{strconv.FormatInt(randValue.Int64(), 10)})
 }
 
 func EnrichMasterSecret(secret string, hash string) string {
@@ -90,7 +113,7 @@ func EnrichMasterSecret(secret string, hash string) string {
 	if err != nil {
 		panic(err)
 	}
-	return GenerateSHA256(
+	return GenerateEncodedSHA256(
 		[]string{
 			strconv.FormatInt(randValue.Int64(), 10),
 			secret,
@@ -98,7 +121,7 @@ func EnrichMasterSecret(secret string, hash string) string {
 	)
 }
 
-func GenerateKeyPair(salts ...string) (string, string) {
+func generateKeyPair(salts ...string) (string, string) {
 	keyPair, err := rsa.GenerateKey(rand.Reader, RSA_KEY_SIZE)
 	if err != nil {
 		panic(err)
@@ -196,4 +219,13 @@ func DecryptAES(cipherText string, key string) string {
 		panic(err)
 	}
 	return string(plainText[aes.BlockSize:])
+}
+
+// TODO
+func GenerateANonce() int64 {
+	randValue, err := rand.Int(rand.Reader, big.NewInt(64))
+	if err != nil {
+		panic(err)
+	}
+	return randValue.Int64()
 }

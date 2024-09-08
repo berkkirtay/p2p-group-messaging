@@ -91,7 +91,7 @@ func PostRoom(room Room) Room {
 		WithCapacity(room.Capacity),
 		WithMembers([]string{}),
 		WithRoomMasterKey(cryptography.GenerateARandomMasterSecret()),
-		WithSignature(cryptography.CreateDefaultCrypto(
+		WithSignature(cryptography.CreateCommonCrypto(
 			room.Name,
 			room.Info,
 			room.Password,
@@ -128,7 +128,7 @@ func JoinRoom(id string, room Room, userId string) Room {
 	user := user.GetUser(userId, "")
 
 	if slices.Contains(actualRoom.Members, userId) {
-		actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Signature.PublicKey)
+		actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Cryptography.PublicKey)
 		return actualRoom
 	}
 
@@ -141,9 +141,6 @@ func JoinRoom(id string, room Room, userId string) Room {
 		return CreateDefaultRoom()
 	}
 
-	// masterSecret := cryptography.ServerSideDiffieHelmanKeyExhange(userHandshakeKey)
-	// actualRoom.DiffieHelmanKeys[userId] = masterSecret[0]
-
 	//actualRoom.RoomMasterKey = cryptography.EnrichMasterSecret(actualRoom.RoomMasterKey, user.Signature.Hash)
 	actualRoom.Members = append(actualRoom.Members, userId)
 	actualRoom.Audit.LastOnlineDate = time.Now().Format(time.RFC1123)
@@ -154,8 +151,7 @@ func JoinRoom(id string, room Room, userId string) Room {
 		return CreateDefaultRoom()
 	}
 	//	SendAMessage(id, userId, buildAMessage(room, userId, CreateMessage(WithText("Greetings! I just joined."))))
-	//TODO encrypt with users key pair :)
-	actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Signature.PublicKey)
+	actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Cryptography.PublicKey)
 	return actualRoom
 }
 

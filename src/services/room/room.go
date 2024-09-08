@@ -10,16 +10,16 @@ import (
 // Reminder: Owner of the room can be verified easily by checking the signature.
 
 type Room struct {
-	Id               string                  `json:"id,omitempty" bson:"id,omitempty"`
-	Name             string                  `json:"name,omitempty" bson:"name,omitempty"`
-	Info             string                  `json:"info,omitempty" bson:"info,omitempty"`
-	Password         string                  `json:"password,omitempty" bson:"password,omitempty"`
-	Capacity         int64                   `json:"capacity,omitempty" bson:"capacity,omitempty"`
-	Members          []string                `json:"members,omitempty" bson:"members,omitempty"`
-	Signature        *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
-	Audit            *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
-	DiffieHelmanKeys map[string]string       `json:"-"`
-	RoomMasterKey    string                  `json:"roomMasterKey,omitempty" bson:"roomMasterKey,omitempty`
+	Id               string                     `json:"id,omitempty" bson:"id,omitempty"`
+	Name             string                     `json:"name,omitempty" bson:"name,omitempty"`
+	Info             string                     `json:"info,omitempty" bson:"info,omitempty"`
+	Password         string                     `json:"password,omitempty" bson:"password,omitempty"`
+	Capacity         int64                      `json:"capacity,omitempty" bson:"capacity,omitempty"`
+	Members          []string                   `json:"members,omitempty" bson:"members,omitempty"`
+	Signature        *cryptography.Cryptography `json:"signature,omitempty" bson:"signature,omitempty"`
+	Audit            *audit.Audit               `json:"audit,omitempty" bson:"audit,omitempty"`
+	DiffieHelmanKeys map[string]string          `json:"-"`
+	RoomMasterKey    string                     `json:"roomMasterKey,omitempty" bson:"roomMasterKey,omitempty`
 }
 
 type RoomOption func(Room) Room
@@ -66,7 +66,7 @@ func WithMembers(members []string) RoomOption {
 	}
 }
 
-func WithSignature(signature *cryptography.Signature) RoomOption {
+func WithSignature(signature *cryptography.Cryptography) RoomOption {
 	return func(room Room) Room {
 		room.Signature = signature
 		return room

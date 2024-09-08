@@ -108,7 +108,7 @@ func joinRoom(roomId string, roomPassword string) {
 	}
 	currentRoom = room
 	currentRoom.RoomMasterKey = cryptography.DecryptRSA(
-		currentRoom.RoomMasterKey, currentUser.Signature.PrivateKey)
+		currentRoom.RoomMasterKey, sessionAuth.Cryptography.PrivateKey)
 
 	fmt.Printf("Joined the room. You will talk with:\n")
 	roomUsers = make(map[string]user.User)

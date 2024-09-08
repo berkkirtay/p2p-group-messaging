@@ -35,3 +35,8 @@ go.work
 
 # go executable file output
 main
+
+# secret files
+PRIVATE_KEY
+PUBLIC_KEY
+SIGN

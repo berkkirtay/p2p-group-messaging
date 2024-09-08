@@ -8,13 +8,14 @@ import (
 )
 
 type User struct {
-	Id        string                  `json:"id,omitempty" bson:"id,omitempty"`
-	Name      string                  `json:"name,omitempty" bson:"name,omitempty"`
-	Password  string                  `json:"password,omitempty" bson:"password,omitempty"`
-	Role      string                  `json:"role,omitempty" bson:"role,omitempty"`
-	Signature *cryptography.Signature `json:"signature,omitempty" bson:"signature,omitempty"`
-	Actions   []*Action               `json:"actions,omitempty" bson:"actions,omitempty"`
-	Audit     *audit.Audit            `json:"audit,omitempty" bson:"audit,omitempty"`
+	Id           string                     `json:"id,omitempty" bson:"id,omitempty"`
+	Name         string                     `json:"name,omitempty" bson:"name,omitempty"`
+	Password     string                     `json:"password,omitempty" bson:"password,omitempty"`
+	Role         string                     `json:"role,omitempty" bson:"role,omitempty"`
+	Cryptography *cryptography.Cryptography `json:"cryptography,omitempty" bson:"cryptography,omitempty"`
+	Actions      []*Action                  `json:"actions,omitempty" bson:"actions,omitempty"`
+	Audit        *audit.Audit               `json:"audit,omitempty" bson:"audit,omitempty"`
+	IsPeer       bool                       `json:"isPeer,omitempty" bson:"isPeer,omitempty"`
 }
 
 type UserOption func(User) User
@@ -47,9 +48,9 @@ func WithRole(role string) UserOption {
 	}
 }
 
-func WithSignature(signature *cryptography.Signature) UserOption {
+func WithCryptography(cryptography *cryptography.Cryptography) UserOption {
 	return func(user User) User {
-		user.Signature = signature
+		user.Cryptography = cryptography
 		return user
 	}
 }
@@ -64,6 +65,13 @@ func WithActions(actions []*Action) UserOption {
 func WithAudit(audit *audit.Audit) UserOption {
 	return func(user User) User {
 		user.Audit = audit
+		return user
+	}
+}
+
+func WithIsPeer(isPeer bool) UserOption {
+	return func(user User) User {
+		user.IsPeer = isPeer
 		return user
 	}
 }

@@ -3,8 +3,8 @@
 package auth
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
+	"main/infra/cryptography"
+	"main/services/user"
 	"math/rand"
 	"strconv"
 	"time"
@@ -13,36 +13,87 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticate(authenticationModel AuthenticationModel, c *gin.Context) AuthenticationModel {
-	if authenticationModel.Id == "" || authenticationModel.Password == "" {
-		return authenticationModel
+func Authenticate(receivedUser user.User, c *gin.Context) AuthenticationModel {
+	var actualUser user.User = user.GetUser(receivedUser.Id, receivedUser.Name)
+	if actualUser.IsPeer {
+		return authenticateWithPKCS(receivedUser, actualUser, c)
+	} else {
+		return authenticateWithPassword(receivedUser, actualUser, c)
 	}
-	session := sessions.Default(c)
-	var token string = generateToken(authenticationModel, retrieveTokenNonce(session))
-	session.Set(token, authenticationModel.Id)
-	session.Save()
+
+}
+
+func authenticateWithPKCS(
+	receivedUser user.User,
+	actualUser user.User,
+	c *gin.Context) AuthenticationModel {
+	var verification bool = cryptography.VerifySignature(
+		[]string{
+			receivedUser.Name,
+			receivedUser.Role},
+		receivedUser.Cryptography.Sign,
+		receivedUser.Cryptography.PublicKey)
+	if verification {
+		var token string = initializeSessionForUser(c, actualUser)
+		var encryptedToken string = cryptography.EncryptRSA(
+			token,
+			receivedUser.Cryptography.PublicKey)
+		return CreateAuthenticationModel(
+			WithId(actualUser.Id),
+			WithName(actualUser.Name),
+			WithToken(encryptedToken),
+			WithCryptography(actualUser.Cryptography),
+		)
+	} else {
+		return CreateDefaultAuthenticationModel()
+	}
+}
+
+func authenticateWithPassword(
+	receivedUser user.User,
+	actualUser user.User,
+	c *gin.Context) AuthenticationModel {
+	if receivedUser.Id == "" || receivedUser.Password == "" {
+		return CreateDefaultAuthenticationModel()
+	}
+
+	if actualUser.Id == "" {
+		return CreateDefaultAuthenticationModel()
+	}
+	if actualUser.Password != receivedUser.Password {
+		return CreateDefaultAuthenticationModel()
+	}
+	var token string = initializeSessionForUser(c, actualUser)
 	return CreateAuthenticationModel(
-		WithId(authenticationModel.Id),
-		WithName(authenticationModel.Name),
-		WithToken(token))
+		WithId(actualUser.Id),
+		WithName(actualUser.Name),
+		WithToken(token),
+		WithCryptography(actualUser.Cryptography),
+	)
 }
 
-func generateToken(authenticationModel AuthenticationModel, nonce string) string {
-	sha256 := sha256.New()
-	sha256.Write([]byte(authenticationModel.Id))
-	sha256.Write([]byte(authenticationModel.Name))
-	sha256.Write([]byte(authenticationModel.Password))
-	sha256.Write([]byte(strconv.FormatInt(rand.Int63(), 10)))
-	sha256.Write([]byte(strconv.FormatInt(time.Now().Unix(), 10)))
-	sha256.Write([]byte(nonce))
-	sha256.Write(sha256.Sum(nil))
-	return base64.StdEncoding.EncodeToString(sha256.Sum(nil))
+func initializeSessionForUser(c *gin.Context, user user.User) string {
+	session := sessions.Default(c)
+	var token string = generateToken(user, getTokenNonce(session))
+	session.Set(token, user.Id)
+	session.Save()
+	return token
 }
 
-func retrieveTokenNonce(session sessions.Session) string {
+func generateToken(user user.User, nonce string) string {
+	return cryptography.GenerateEncodedSHA256([]string{
+		user.Id,
+		user.Name,
+		user.Password,
+		strconv.FormatInt(rand.Int63(), 10),
+		strconv.FormatInt(time.Now().Unix(), 10),
+		nonce})
+}
+
+func getTokenNonce(session sessions.Session) string {
 	var currentNonce interface{} = session.Get("TokenNonce")
 	if currentNonce == nil {
-		currentNonce = int64(1000000000)
+		currentNonce = cryptography.GenerateANonce()
 	}
 	currentNonce = currentNonce.(int64) + 1
 	session.Set("TokenNonce", currentNonce)
