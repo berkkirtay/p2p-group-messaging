@@ -4,6 +4,7 @@ package middlewares
 
 import (
 	"crypto/rand"
+	"main/services/auth"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -34,6 +35,14 @@ func ValidateAuthentication() gin.HandlerFunc {
 
 func isAuthenticated(c *gin.Context) bool {
 	session := sessions.Default(c)
-	sessionId := session.Get(c.Request.Header.Get("Authorization"))
-	return sessionId == c.Request.Header.Get("Session")
+	authToken := c.Request.Header.Get("Authorization")
+	userId := c.Request.Header.Get("Session")
+	publicKey := c.Request.Header.Get("PublicKey")
+	if publicKey != "" {
+		// var token string =
+		auth.InitializeSessionWithDiffieHellman(c, publicKey, userId)
+		// return token == authToken
+	}
+	sessionId := session.Get(authToken)
+	return sessionId == userId
 }

@@ -5,20 +5,19 @@ package controllers
 import (
 	"encoding/json"
 	"main/services/auth"
-	"main/services/user"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func postAuthRequest(c *gin.Context) {
-	var userBody user.User
-	err := json.NewDecoder(c.Request.Body).Decode(&userBody)
+	var authBody auth.AuthenticationModel
+	err := json.NewDecoder(c.Request.Body).Decode(&authBody)
 	if err != nil {
 		panic(err)
 	}
-	res := auth.Authenticate(userBody, c)
-	if res.Token == "" {
+	res := auth.Authenticate(authBody, c)
+	if res.Id == "" {
 		c.AbortWithStatusJSON(http.StatusBadRequest, res)
 		return
 	}

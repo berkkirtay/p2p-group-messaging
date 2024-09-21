@@ -4,7 +4,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/services/audit"
 	"main/services/user"
 	"net/http"
@@ -29,7 +28,6 @@ func postUser(c *gin.Context) {
 	}
 	userBody.Audit = audit.CreateAuditForUser(c.ClientIP())
 	res := user.PostUser(userBody)
-	fmt.Println(userBody.Audit)
 	c.JSON(http.StatusCreated, res)
 }
 

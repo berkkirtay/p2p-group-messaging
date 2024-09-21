@@ -6,6 +6,7 @@ import (
 	"crypto"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/ecdh"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -33,7 +34,8 @@ func CreateCommonCrypto(values ...string) *Cryptography {
 		WithHash(hash),
 		WithNonce(GenerateANonce()),
 		WithSign(generateSignature(privateKey, hash)),
-		WithTimestamp(time.Now().Format(time.RFC1123)))
+		WithTimestamp(time.Now().Format(time.RFC1123)),
+		WithElliptic(CreateElliptic(WithEllipticKeys(GenerateEllipticCurveKeys()))))
 	return crypto
 }
 
@@ -219,6 +221,34 @@ func DecryptAES(cipherText string, key string) string {
 		panic(err)
 	}
 	return string(plainText[aes.BlockSize:])
+}
+
+func GenerateEllipticCurveKeys() (*ecdh.PrivateKey, string) {
+	key, err := ecdh.X25519().GenerateKey(rand.Reader)
+	if err != nil {
+		panic(err)
+	}
+	publicKey, err := x509.MarshalPKIXPublicKey(key.PublicKey())
+	if err != nil {
+		panic(err)
+	}
+	return key, b64.StdEncoding.EncodeToString(publicKey)
+}
+
+func DiffieHellman(receiverKey *ecdh.PrivateKey, senderKey string) string {
+	decodedPublicKey, err := b64.StdEncoding.DecodeString(senderKey)
+	if err != nil {
+		panic(err)
+	}
+	publicKey, err := x509.ParsePKIXPublicKey(decodedPublicKey)
+	if err != nil {
+		panic(err)
+	}
+	sharedSecret, err := receiverKey.ECDH(publicKey.(*ecdh.PublicKey))
+	if err != nil {
+		panic(err)
+	}
+	return GenerateEncodedSHA256([]string{string(sharedSecret)})
 }
 
 // TODO

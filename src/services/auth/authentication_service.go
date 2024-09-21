@@ -4,6 +4,7 @@ package auth
 
 import (
 	"main/infra/cryptography"
+	"main/services/peer"
 	"main/services/user"
 	"math/rand"
 	"strconv"
@@ -13,14 +14,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authenticate(receivedUser user.User, c *gin.Context) AuthenticationModel {
+func Authenticate(authBody AuthenticationModel, c *gin.Context) AuthenticationModel {
+	var receivedUser user.User = user.CreateUser(
+		user.WithId(authBody.Id),
+		user.WithName(authBody.Name),
+		user.WithPassword(authBody.Password),
+		user.WithCryptography(authBody.Cryptography))
 	var actualUser user.User = user.GetUser(receivedUser.Id, receivedUser.Name)
 	if actualUser.IsPeer {
-		return authenticateWithPKCS(receivedUser, actualUser, c)
+		return authenticateWithDiffieHellman(receivedUser, actualUser, c)
 	} else {
 		return authenticateWithPassword(receivedUser, actualUser, c)
 	}
-
 }
 
 func authenticateWithPKCS(
@@ -29,8 +34,7 @@ func authenticateWithPKCS(
 	c *gin.Context) AuthenticationModel {
 	var verification bool = cryptography.VerifySignature(
 		[]string{
-			receivedUser.Name,
-			receivedUser.Role},
+			receivedUser.Name},
 		receivedUser.Cryptography.Sign,
 		receivedUser.Cryptography.PublicKey)
 	if verification {
@@ -43,6 +47,33 @@ func authenticateWithPKCS(
 			WithName(actualUser.Name),
 			WithToken(encryptedToken),
 			WithCryptography(actualUser.Cryptography),
+		)
+	} else {
+		return CreateDefaultAuthenticationModel()
+	}
+}
+
+func authenticateWithDiffieHellman(
+	receivedUser user.User,
+	actualUser user.User,
+	c *gin.Context) AuthenticationModel {
+	var verification bool = cryptography.VerifySignature(
+		[]string{
+			receivedUser.Name},
+		receivedUser.Cryptography.Sign,
+		receivedUser.Cryptography.PublicKey)
+	if verification && receivedUser.Name == actualUser.Name &&
+		receivedUser.Cryptography.Sign == actualUser.Cryptography.Sign {
+		InitializeSessionWithDiffieHellman(
+			c,
+			receivedUser.Cryptography.Elliptic.PublicKey,
+			receivedUser.Id)
+		crypto := cryptography.CreateCryptography(
+			cryptography.WithPublicKey(peer.GetMasterPeer().Cryptography.PublicKey))
+		return CreateAuthenticationModel(
+			WithId(actualUser.Id),
+			WithName(actualUser.Name),
+			WithCryptography(crypto),
 		)
 	} else {
 		return CreateDefaultAuthenticationModel()
@@ -78,6 +109,14 @@ func initializeSessionForUser(c *gin.Context, user user.User) string {
 	session.Set(token, user.Id)
 	session.Save()
 	return token
+}
+
+func InitializeSessionWithDiffieHellman(c *gin.Context, publicKey string, userId string) {
+	session := sessions.Default(c)
+	var token string = cryptography.DiffieHellman(
+		peer.GetMasterPeer().Cryptography.Elliptic.PrivateKey, publicKey)
+	session.Set(token, userId)
+	session.Save()
 }
 
 func generateToken(user user.User, nonce string) string {

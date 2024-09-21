@@ -2,16 +2,19 @@
 
 package peer
 
+import "main/infra/cryptography"
+
 const (
 	INBOUND  = "INBOUND"
 	OUTBOUND = "OUTBOUND"
 )
 
 type Peer struct {
-	Hostname string `json:"hostname,omitempty" bson:"hostname,,omitempty"`
-	Name     string `json:"name,omitempty" bson:"name,omitempty"`
-	Address  string `json:"address,omitempty" bson:"address,omitempty"`
-	Role     string `json:"role,omitempty" bson:"role,omitempty"`
+	Hostname     string                     `json:"hostname,omitempty" bson:"hostname,,omitempty"`
+	Name         string                     `json:"name,omitempty" bson:"name,omitempty"`
+	Address      string                     `json:"address,omitempty" bson:"address,omitempty"`
+	Role         string                     `json:"role,omitempty" bson:"role,omitempty"`
+	Cryptography *cryptography.Cryptography `json:"cryptography,omitempty" bson:"cryptography,omitempty"`
 }
 
 type PeerOption func(Peer) Peer
@@ -44,15 +47,24 @@ func WithRole(role string) PeerOption {
 	}
 }
 
+func WithCryptography(cryptography *cryptography.Cryptography) PeerOption {
+	return func(peer Peer) Peer {
+		peer.Cryptography = cryptography
+		return peer
+	}
+}
+
 func WithPeer(newPeer Peer) PeerOption {
 	return func(peer Peer) Peer {
 		peer.Hostname = newPeer.Hostname
 		peer.Name = newPeer.Name
 		peer.Address = newPeer.Address
 		peer.Role = newPeer.Role
+		peer.Cryptography = newPeer.Cryptography
 		return peer
 	}
 }
+
 func CreateDefaultPeer() Peer {
 	return Peer{}
 }

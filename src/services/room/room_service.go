@@ -128,7 +128,9 @@ func JoinRoom(id string, room Room, userId string) Room {
 	user := user.GetUser(userId, "")
 
 	if slices.Contains(actualRoom.Members, userId) {
-		actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Cryptography.PublicKey)
+		actualRoom.RoomMasterKey = cryptography.EncryptRSA(
+			actualRoom.RoomMasterKey,
+			user.Cryptography.PublicKey)
 		return actualRoom
 	}
 

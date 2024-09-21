@@ -10,6 +10,7 @@ import (
 )
 
 var repository = store.NewRepo("peer")
+var masterPeer Peer
 
 func GetPeers() []Peer {
 	return retrievePeers()
@@ -20,13 +21,17 @@ func PostPeer(peer Peer) Peer {
 		WithHostname(peer.Hostname),
 		WithName(peer.Name),
 		WithAddress(peer.Address),
-		WithRole(peer.Role))
+		WithRole(peer.Role),
+		WithCryptography(peer.Cryptography))
 	filter := bson.D{
 		{Key: "hostname", Value: builtPeer.Hostname},
 		{Key: "role", Value: builtPeer.Role}}
 	cur, _ := repository.FindOne(filter, nil)
 	if cur == nil {
 		repository.InsertOne(builtPeer)
+	}
+	if peer.Role == INBOUND {
+		masterPeer = peer
 	}
 	return builtPeer
 }
@@ -49,4 +54,8 @@ func retrievePeers() []Peer {
 		peers = append(peers, currentPeer)
 	}
 	return peers
+}
+
+func GetMasterPeer() Peer {
+	return masterPeer
 }

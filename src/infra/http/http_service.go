@@ -5,9 +5,11 @@ package http
 import (
 	"encoding/json"
 	"io"
+	"main/infra/cryptography"
+	"main/services/auth"
+	"main/services/peer"
 	"net/http"
 	"net/http/cookiejar"
-	"net/url"
 	"strings"
 )
 
@@ -26,13 +28,15 @@ const (
 var sessionHeader HeaderModel
 var client *http.Client
 
-func InitializeService(cookies []*http.Cookie, headerData ...string) {
-	if len(headerData) > 1 {
+func InitializeService(sessionAuth *auth.AuthenticationModel) {
+	if sessionAuth != nil && sessionAuth.Token != "" {
 		sessionHeader = CreateHeaderModel(
 			WithContentType("application/json"),
-			WithCookie(cookies),
-			WithSession(headerData[0]),
-			WithAuthorization(headerData[1]))
+			WithCookie(sessionAuth.Cookies),
+			WithSession(sessionAuth.Id),
+			WithAuthorization(sessionAuth.Token),
+			WithPublicKey(sessionAuth.Cryptography.PublicKey))
+
 	}
 	if client == nil {
 		jar, err := cookiejar.New(nil)
@@ -43,13 +47,22 @@ func InitializeService(cookies []*http.Cookie, headerData ...string) {
 			Jar: jar,
 		}
 	}
-
 }
 
-func GET(path string, respType interface{}, params ...string) *http.Response {
-	if client == nil {
-		InitializeService(nil)
-	}
+func generateANewWithDiffieHellmanAuthKey(peer peer.Peer) {
+	privateKey, publicKey := cryptography.GenerateEllipticCurveKeys()
+	var token string = cryptography.DiffieHellman(privateKey, peer.Cryptography.Elliptic.PublicKey)
+	sessionHeader = CreateHeaderModel(
+		WithContentType("application/json"),
+		WithCookie(sessionHeader.Cookie),
+		WithSession(sessionHeader.Session),
+		WithAuthorization(token),
+		WithPublicKey(publicKey))
+}
+
+func GET(peer peer.Peer, path string, respType interface{}, params ...string) *http.Response {
+	InitializeService(nil)
+	generateANewWithDiffieHellmanAuthKey(peer)
 	path = handleQueryParams(path, params)
 	req, err := http.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
@@ -67,21 +80,17 @@ func GET(path string, respType interface{}, params ...string) *http.Response {
 		panic(err)
 	}
 	if body == nil {
-		panic(err)
+		return res
 	}
 	if len(body) != 0 {
-		err = json.Unmarshal(body, &respType)
-		if err != nil {
-			panic(err)
-		}
+		json.Unmarshal(body, &respType)
 	}
 	return res
 }
 
-func POST(path string, payload string, respType interface{}, params ...string) *http.Response {
-	if client == nil {
-		InitializeService(nil)
-	}
+func POST(peer peer.Peer, path string, payload string, respType interface{}, params ...string) *http.Response {
+	InitializeService(nil)
+	generateANewWithDiffieHellmanAuthKey(peer)
 	path = handleQueryParams(path, params)
 	req, err := http.NewRequest(http.MethodPost, path, strings.NewReader(payload))
 	if err != nil {
@@ -102,10 +111,7 @@ func POST(path string, payload string, respType interface{}, params ...string) *
 		return res
 	}
 	if len(body) != 0 {
-		err = json.Unmarshal(body, &respType)
-		if err != nil {
-			panic(err)
-		}
+		json.Unmarshal(body, &respType)
 	}
 	return res
 }
@@ -114,10 +120,9 @@ func PUT() {
 
 }
 
-func DELETE(path string, respType interface{}, params ...string) *http.Response {
-	if client == nil {
-		InitializeService(nil)
-	}
+func DELETE(peer peer.Peer, path string, respType interface{}, params ...string) *http.Response {
+	InitializeService(nil)
+	generateANewWithDiffieHellmanAuthKey(peer)
 	path = handleQueryParams(path, params)
 	req, err := http.NewRequest(http.MethodDelete, path, nil)
 	if err != nil {
@@ -139,10 +144,10 @@ func prepareHeadersForRequest(req *http.Request) {
 	for key, value := range headerMap {
 		req.Header.Add(key, value)
 	}
-	urlObj, _ := url.Parse("/")
-	if len(sessionHeader.Cookie) > 0 {
-		client.Jar.SetCookies(urlObj, sessionHeader.Cookie)
-	}
+	// urlObj, _ := url.Parse("/")
+	// if len(sessionHeader.Cookie) > 0 {
+	// 	client.Jar.SetCookies(urlObj, sessionHeader.Cookie)
+	// }
 }
 
 func handleQueryParams(url string, params []string) string {

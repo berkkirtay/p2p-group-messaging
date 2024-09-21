@@ -4,6 +4,7 @@ package room
 
 import (
 	"context"
+	"fmt"
 	"main/infra/store"
 	"main/services/audit"
 	"slices"
@@ -30,7 +31,6 @@ type MessageService interface {
 }
 
 var messageRepository = store.NewRepo("messaging")
-var cachedRoom Room
 
 func ReceiveMessages(id string, size string, sort string, userId string) []Message {
 	var messages []Message = []Message{}
@@ -75,6 +75,7 @@ func SendAMessage(id string, userId string, message Message) Message {
 	// Check if the user is in the room:
 	var room Room = fetchTargetRoom(id)
 	if !validateUserRoomAuth(room, userId) {
+		fmt.Println("afdsfdsa")
 		return CreateDefaultMessage()
 	}
 
@@ -85,15 +86,13 @@ func SendAMessage(id string, userId string, message Message) Message {
 }
 
 func fetchTargetRoom(id string) Room {
-	if id == cachedRoom.Id {
-		return cachedRoom
-	}
+	var room Room
 	filter := bson.D{{Key: "id", Value: id}}
 	cur, err := repository.FindOne(filter, nil)
 	if cur != nil && err == nil {
-		cur.Decode(&cachedRoom)
+		cur.Decode(&room)
 	}
-	return cachedRoom
+	return room
 }
 
 func validateUserRoomAuth(room Room, userId string) bool {

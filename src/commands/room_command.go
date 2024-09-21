@@ -23,19 +23,18 @@ var retrieveMessagesFlag bool
 var lastMessageId int64
 
 func HandleGetRooms() {
-	url := assignedPeer.Address + "/room"
 	var rooms = make([]room.Room, 5)
-	var res = http.GET(url, &rooms, "size", "5")
-	if res.StatusCode != http.OK {
-		fmt.Printf("Error")
-		return
-	}
-	fmt.Printf("Available rooms in the server:\n")
-	fmt.Printf("------------\n")
-	for _, room := range rooms {
-		fmt.Printf("Id and Room Name: %s - %s\nInfo: %s\n", room.Id, room.Name, room.Info)
-		fmt.Printf("Capacity: %v\nOther details: %s\n", room.Capacity, room.Audit.CreateDate)
+	var res = http.GET(assignedPeer, assignedPeer.Address+"/room", &rooms, "size", "5")
+	if res.StatusCode == http.OK {
+		fmt.Printf("Available rooms in the server:\n")
 		fmt.Printf("------------\n")
+		for _, room := range rooms {
+			fmt.Printf("Id and Room Name: %s - %s\nInfo: %s\n", room.Id, room.Name, room.Info)
+			fmt.Printf("Capacity: %v\nOther details: %s\n", room.Capacity, room.Audit.CreateDate)
+			fmt.Printf("------------\n")
+		}
+	} else {
+		fmt.Printf("No rooms found.")
 	}
 }
 
@@ -57,7 +56,7 @@ func HandleCreateRoom(command []string) {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	res := http.POST(assignedPeer.Address+"/room", string(body), &room)
+	res := http.POST(assignedPeer, assignedPeer.Address+"/room", string(body), &room)
 	if res.StatusCode != http.CREATED {
 		fmt.Printf("Error")
 		return
@@ -66,7 +65,6 @@ func HandleCreateRoom(command []string) {
 }
 
 func HandleText(command string) {
-	url := assignedPeer.Address + "/room/messages"
 	var message room.Message = room.CreateMessage(
 		room.WithText(cryptography.EncryptAES(command, currentRoom.RoomMasterKey)),
 		room.WithIsEncrypted(true))
@@ -76,7 +74,7 @@ func HandleText(command string) {
 		return
 	}
 
-	res := http.POST(url, string(body), message, "id", currentRoom.Id)
+	res := http.POST(assignedPeer, assignedPeer.Address+"/room/messages", string(body), message, "id", currentRoom.Id)
 	if res.StatusCode != http.CREATED {
 		fmt.Printf("Message could not be sent.")
 		return
@@ -92,7 +90,6 @@ func HandleJoinRoom(command []string, user user.User) {
 }
 
 func joinRoom(roomId string, roomPassword string) {
-	url := assignedPeer.Address + "/room/join"
 	var room = room.CreateRoom(
 		room.WithId(roomId),
 		room.WithPassword(roomPassword))
@@ -101,7 +98,7 @@ func joinRoom(roomId string, roomPassword string) {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-	res := http.POST(url, string(body), &room, "id", roomId)
+	res := http.POST(assignedPeer, assignedPeer.Address+"/room/join", string(body), &room, "id", roomId)
 	if res.StatusCode != http.OK {
 		fmt.Printf("Error")
 		return
@@ -113,14 +110,8 @@ func joinRoom(roomId string, roomPassword string) {
 	fmt.Printf("Joined the room. You will talk with:\n")
 	roomUsers = make(map[string]user.User)
 	for _, userId := range room.Members {
-		var userBody = []user.User{}
-		var res = http.GET(assignedPeer.Address+"/users", &userBody, "id", userId)
-		if res.StatusCode != http.OK {
-			fmt.Printf("Error")
-			return
-		}
-		roomUsers[userId] = userBody[0]
-		fmt.Printf("%s\n", userBody[0].Name)
+		roomUsers[userId] = getUser(userId)
+		fmt.Printf("%s\n", roomUsers[userId].Name)
 	}
 }
 
@@ -140,6 +131,7 @@ func messageLoop() {
 func getMessages(size int64) {
 	var messages = []room.Message{}
 	res := http.GET(
+		assignedPeer,
 		assignedPeer.Address+"/room/messages",
 		&messages,
 		"id",
@@ -160,6 +152,9 @@ func printMessages(messages []room.Message) {
 	for _, message := range messages {
 		currentMessageId, _ := strconv.ParseInt(message.Id, 10, 64)
 		if currentMessageId > lastMessageId {
+			if roomUsers[message.UserId].Id == "" {
+				roomUsers[message.UserId] = getUser(message.UserId)
+			}
 			fmt.Printf(
 				"\r%s >> %s\n", roomUsers[message.UserId].Name,
 				buildAReadableText(message))
@@ -171,13 +166,14 @@ func printMessages(messages []room.Message) {
 func fetchLastMessageId() int64 {
 	var messages = []room.Message{}
 	res := http.GET(
+		assignedPeer,
 		assignedPeer.Address+"/room/messages",
 		&messages,
 		"id",
 		currentRoom.Id,
 		"size",
 		"1")
-	if res.StatusCode != http.NOT_FOUND {
+	if res != nil && res.StatusCode != http.NOT_FOUND {
 		lastStoredMessageId, _ := strconv.ParseInt(messages[0].Id, 10, 64)
 		return lastStoredMessageId
 	}
@@ -190,6 +186,20 @@ func buildAReadableText(message room.Message) string {
 	} else {
 		return message.Text
 	}
+}
+
+func getUser(userId string) user.User {
+	var userBody = []user.User{}
+	var res = http.GET(
+		assignedPeer,
+		assignedPeer.Address+"/users",
+		&userBody,
+		"id",
+		userId)
+	if res.StatusCode == http.OK {
+		return userBody[0]
+	}
+	return user.CreateDefaultUser()
 }
 
 func HandleExitRoom() {

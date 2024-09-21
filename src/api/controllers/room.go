@@ -74,7 +74,11 @@ func leaveRoom(c *gin.Context) {
 }
 
 func receiveMessagesHTTP(c *gin.Context) {
-	res := room.ReceiveMessages(c.Query("id"), c.Query("size"), c.Query("sort"), c.Request.Header.Get("Session"))
+	res := room.ReceiveMessages(
+		c.Query("id"),
+		c.Query("size"),
+		c.Query("sort"),
+		c.Request.Header.Get("Session"))
 	if len(res) == 0 {
 		c.JSON(http.StatusNotFound, res)
 	} else {

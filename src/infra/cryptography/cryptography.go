@@ -3,12 +3,13 @@
 package cryptography
 
 type Cryptography struct {
-	Sign       string `json:"sign,omitempty" bson:"sign,omitempty"`
-	PublicKey  string `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
-	PrivateKey string `json:"privateKey,omitempty" bson:"privateKey,omitempty"`
-	Nonce      int64  `json:"nonce,omitempty" bson:"nonce,omitempty"`
-	Timestamp  string `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
-	Hash       string `json:"hash,omitempty" bson:"hash,omitempty"`
+	Sign       string    `json:"sign,omitempty" bson:"sign,omitempty"`
+	PublicKey  string    `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
+	PrivateKey string    `json:"privateKey,omitempty" bson:"privateKey,omitempty"`
+	Nonce      int64     `json:"nonce,omitempty" bson:"nonce,omitempty"`
+	Timestamp  string    `json:"timestamp,omitempty" bson:"timestamp,omitempty"`
+	Hash       string    `json:"hash,omitempty" bson:"hash,omitempty"`
+	Elliptic   *Elliptic `json:"elliptic,omitempty" bson:"elliptic,omitempty"`
 }
 
 type CryptographyOption func(Cryptography) Cryptography
@@ -51,6 +52,13 @@ func WithTimestamp(timestamp string) CryptographyOption {
 func WithHash(hash string) CryptographyOption {
 	return func(Cryptography Cryptography) Cryptography {
 		Cryptography.Hash = hash
+		return Cryptography
+	}
+}
+
+func WithElliptic(elliptic *Elliptic) CryptographyOption {
+	return func(Cryptography Cryptography) Cryptography {
+		Cryptography.Elliptic = elliptic
 		return Cryptography
 	}
 }
