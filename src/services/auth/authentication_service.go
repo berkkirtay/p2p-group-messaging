@@ -14,6 +14,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var authenticationMap = make(map[string]cryptography.Elliptic)
+
 func Authenticate(authBody AuthenticationModel, c *gin.Context) AuthenticationModel {
 	var receivedUser user.User = user.CreateUser(
 		user.WithId(authBody.Id),
@@ -64,16 +66,26 @@ func authenticateWithDiffieHellman(
 		receivedUser.Cryptography.PublicKey)
 	if verification && receivedUser.Name == actualUser.Name &&
 		receivedUser.Cryptography.Sign == actualUser.Cryptography.Sign {
-		InitializeSessionWithDiffieHellman(
-			c,
-			receivedUser.Cryptography.Elliptic.PublicKey,
-			receivedUser.Id)
+		token := initializeSessionForUser(c, receivedUser)
+		authenticationMap[receivedUser.Id] = *cryptography.CreateElliptic(
+			cryptography.WithEllipticKeys(
+				peer.GetMasterPeer().Cryptography.Elliptic.PrivateKey,
+				peer.GetMasterPeer().Cryptography.Elliptic.PublicKey))
+		// cryptography.CreateElliptic(
+		// 	cryptography.WithEllipticKeys(
+		// 		cryptography.GenerateEllipticCurveKeys()))
+		key := cryptography.DiffieHellman(
+			authenticationMap[receivedUser.Id].PrivateKey,
+			receivedUser.Cryptography.Elliptic.PublicKey)
+
+		encryptedToken := cryptography.EncryptAES(token, key)
 		crypto := cryptography.CreateCryptography(
-			cryptography.WithPublicKey(peer.GetMasterPeer().Cryptography.PublicKey))
+			cryptography.WithPublicKey(authenticationMap[receivedUser.Id].PublicKey))
 		return CreateAuthenticationModel(
 			WithId(actualUser.Id),
 			WithName(actualUser.Name),
 			WithCryptography(crypto),
+			WithToken(encryptedToken),
 		)
 	} else {
 		return CreateDefaultAuthenticationModel()
@@ -111,12 +123,12 @@ func initializeSessionForUser(c *gin.Context, user user.User) string {
 	return token
 }
 
-func InitializeSessionWithDiffieHellman(c *gin.Context, publicKey string, userId string) {
-	session := sessions.Default(c)
-	var token string = cryptography.DiffieHellman(
-		peer.GetMasterPeer().Cryptography.Elliptic.PrivateKey, publicKey)
-	session.Set(token, userId)
-	session.Save()
+func CalculateDiffieHellmanUserAuthentication(
+	userId string,
+	userPublicKey string,
+	encryptedToken string) string {
+	key := cryptography.DiffieHellman(authenticationMap[userId].PrivateKey, userPublicKey)
+	return cryptography.DecryptAES(encryptedToken, key)
 }
 
 func generateToken(user user.User, nonce string) string {

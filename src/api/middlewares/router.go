@@ -20,6 +20,8 @@ func InitializeRouters(routerGroup *gin.RouterGroup) {
 
 func handleGenericPanic(c *gin.Context, err any) {
 	defer func() {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"Error:": err})
+		c.AbortWithStatusJSON(
+			http.StatusInternalServerError,
+			gin.H{"Error:": err})
 	}()
 }

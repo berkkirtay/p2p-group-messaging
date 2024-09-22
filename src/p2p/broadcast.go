@@ -27,7 +27,7 @@ import (
 const (
 	LOCAL_BROADCAST_ADDRESS string = "224.0.0.1:9999"
 	NETWORK_NAME            string = "udp4"
-	MAX_BROADCAST_AMOUNT    int    = 1
+	MAX_BROADCAST_AMOUNT    int    = 2
 	ADDRESS_FORMAT          string = HTTP + "%s" + PORT + API
 )
 
@@ -54,20 +54,22 @@ func startPeerBroadcast() {
 
 	// Continuously check if the current host has established a connection with any peer:
 	for i := 0; i < MAX_BROADCAST_AMOUNT; i++ {
+		if commands.IsPeerInitialized() {
+			return
+		}
 		fmt.Printf("Broadcasting for an active peer... %d\n", i)
 		_, err = broadcast.Write([]byte(strconv.Itoa(unique_udp_request_identifier)))
 		if err != nil {
 			panic(err)
-		}
-		if commands.IsPeerInitialized() {
-			return
 		}
 		time.Sleep(1 * time.Second)
 	}
 
 	// Become a main peer in case no other peer exists:
 	fmt.Println("No active peer found, making yourself an active peer.")
-	commands.InitializeAMasterPeer(currentHost, fmt.Sprintf(ADDRESS_FORMAT, currentHost))
+	commands.InitializeAMasterPeer(
+		currentHost,
+		fmt.Sprintf(ADDRESS_FORMAT, currentHost))
 }
 
 func listenForPeerBroadcast() {
@@ -101,7 +103,10 @@ func listenForPeerBroadcast() {
 			// Send your peer info to the sender and conclude broadcasting:
 			var remote_udp_request_identifier, _ = strconv.Atoi(string(buf[:n]))
 			if remote_udp_request_identifier != unique_udp_request_identifier {
-				var targetAddress string = fmt.Sprintf(ADDRESS_FORMAT, strings.Split(addr.String(), ":")[0])
+				var targetAddress string = fmt.Sprintf(
+					ADDRESS_FORMAT,
+					strings.Split(addr.String(),
+						":")[0])
 				commands.RegisterPeer(
 					targetAddress,
 					currentHost,

@@ -4,9 +4,15 @@ package commands
 
 import (
 	"os"
+	"path/filepath"
 )
 
 func dumpToFile(data string, fileName string) {
+	dir := filepath.Dir(fileName)
+	err := os.MkdirAll(dir, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 	file, err := os.Create(fileName)
 	if err != nil {
 		panic(err)

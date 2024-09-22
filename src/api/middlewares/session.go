@@ -26,11 +26,12 @@ func InitializeSession(app *gin.Engine) {
 func ValidateAuthentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !isAuthenticated(c) {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error:": "Connection is not authorized."})
+			c.AbortWithStatusJSON(
+				http.StatusUnauthorized,
+				gin.H{"Error:": "Connection is not authorized."})
 		}
 		c.Next()
 	}
-
 }
 
 func isAuthenticated(c *gin.Context) bool {
@@ -39,9 +40,10 @@ func isAuthenticated(c *gin.Context) bool {
 	userId := c.Request.Header.Get("Session")
 	publicKey := c.Request.Header.Get("PublicKey")
 	if publicKey != "" {
-		// var token string =
-		auth.InitializeSessionWithDiffieHellman(c, publicKey, userId)
-		// return token == authToken
+		authToken = auth.CalculateDiffieHellmanUserAuthentication(
+			userId,
+			publicKey,
+			authToken)
 	}
 	sessionId := session.Get(authToken)
 	return sessionId == userId

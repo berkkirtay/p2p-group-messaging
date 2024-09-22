@@ -34,7 +34,7 @@ func HandleGetRooms() {
 			fmt.Printf("------------\n")
 		}
 	} else {
-		fmt.Printf("No rooms found.")
+		fmt.Printf("No room found.\n")
 	}
 }
 
@@ -73,8 +73,13 @@ func HandleText(command string) {
 		fmt.Printf("Error: %s", err)
 		return
 	}
-
-	res := http.POST(assignedPeer, assignedPeer.Address+"/room/messages", string(body), message, "id", currentRoom.Id)
+	res := http.POST(
+		assignedPeer,
+		assignedPeer.Address+"/room/messages",
+		string(body),
+		message,
+		"id",
+		currentRoom.Id)
 	if res.StatusCode != http.CREATED {
 		fmt.Printf("Message could not be sent.")
 		return
@@ -115,6 +120,7 @@ func joinRoom(roomId string, roomPassword string) {
 	}
 }
 
+// TODO: Can we implement a event listener instead of polling the peer constantly?
 func messageLoop() {
 	for {
 		if !retrieveMessagesFlag {
@@ -124,7 +130,7 @@ func messageLoop() {
 		if messageSize > 0 {
 			getMessages(messageSize)
 		}
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(3000 * time.Millisecond)
 	}
 }
 

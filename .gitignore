@@ -40,3 +40,4 @@ main
 PRIVATE_KEY
 PUBLIC_KEY
 SIGN
+keys/

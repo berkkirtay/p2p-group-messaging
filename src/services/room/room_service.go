@@ -143,7 +143,6 @@ func JoinRoom(id string, room Room, userId string) Room {
 		return CreateDefaultRoom()
 	}
 
-	//actualRoom.RoomMasterKey = cryptography.EnrichMasterSecret(actualRoom.RoomMasterKey, user.Signature.Hash)
 	actualRoom.Members = append(actualRoom.Members, userId)
 	actualRoom.Audit.LastOnlineDate = time.Now().Format(time.RFC1123)
 	actualRoom.Audit.NumberOfActions += 1
@@ -152,7 +151,8 @@ func JoinRoom(id string, room Room, userId string) Room {
 	if res.ModifiedCount == 0 {
 		return CreateDefaultRoom()
 	}
-	//	SendAMessage(id, userId, buildAMessage(room, userId, CreateMessage(WithText("Greetings! I just joined."))))
+	// SendAMessage(id, userId, buildAMessage(room, userId, CreateMessage(WithText("Greetings! I just joined."))))
+	// Send the room secret to the new user upon encryption with the public key of the user:
 	actualRoom.RoomMasterKey = cryptography.EncryptRSA(actualRoom.RoomMasterKey, user.Cryptography.PublicKey)
 	return actualRoom
 }

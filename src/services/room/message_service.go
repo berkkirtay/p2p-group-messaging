@@ -4,7 +4,6 @@ package room
 
 import (
 	"context"
-	"fmt"
 	"main/infra/store"
 	"main/services/audit"
 	"slices"
@@ -75,7 +74,6 @@ func SendAMessage(id string, userId string, message Message) Message {
 	// Check if the user is in the room:
 	var room Room = fetchTargetRoom(id)
 	if !validateUserRoomAuth(room, userId) {
-		fmt.Println("afdsfdsa")
 		return CreateDefaultMessage()
 	}
 

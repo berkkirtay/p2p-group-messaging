@@ -22,9 +22,9 @@ func HandleRegister(command []string) {
 
 	name := command[1]
 	userCrypto := cryptography.CreateCommonCrypto(name)
-	dumpToFile(userCrypto.PrivateKey, "PRIVATE_KEY")
-	dumpToFile(userCrypto.PublicKey, "PUBLIC_KEY")
-	dumpToFile(userCrypto.Sign, "SIGN")
+	dumpToFile(userCrypto.PublicKey, fmt.Sprintf("./keys/PUBLIC_KEY_%s", name))
+	dumpToFile(userCrypto.PrivateKey, fmt.Sprintf("./keys/PRIVATE_KEY_%s", name))
+	dumpToFile(userCrypto.Sign, fmt.Sprintf("./keys/SIGN_%s", name))
 	userCrypto.PrivateKey = ""
 	userCrypto.Elliptic.PrivateKey = nil
 	var user user.User = user.CreateUser(
@@ -75,9 +75,10 @@ func HandleLogin(command []string) {
 }
 
 func loginWithPKCS(userLogin string, userId string) auth.AuthenticationModel {
-	publicKey := readFromFile("PUBLIC_KEY")
-	privateKey := readFromFile("PRIVATE_KEY")
-	sign := readFromFile("SIGN")
+	publicKey := readFromFile(fmt.Sprintf("./keys/PUBLIC_KEY_%s", userLogin))
+	privateKey := readFromFile(fmt.Sprintf("./keys/PRIVATE_KEY_%s", userLogin))
+	sign := readFromFile(fmt.Sprintf("./keys/SIGN_%s", userLogin))
+
 	ellipticPrivate, ellipticPublic := cryptography.GenerateEllipticCurveKeys()
 	userCrypto := cryptography.CreateCryptography(
 		cryptography.WithSign(sign),
@@ -92,9 +93,10 @@ func loginWithPKCS(userLogin string, userId string) auth.AuthenticationModel {
 		auth.WithCryptography(userCrypto)))
 
 	if authentication.Id != "" {
-		authentication.Token = cryptography.DiffieHellman(
+		key := cryptography.DiffieHellman(
 			ellipticPrivate,
 			assignedPeer.Cryptography.Elliptic.PublicKey)
+		authentication.Token = cryptography.DecryptAES(authentication.Token, key)
 		authentication.Cryptography.PrivateKey = privateKey
 	}
 	return authentication

@@ -23,6 +23,7 @@ func InitializeAMasterPeer(hostname string, address string) {
 
 // TODO review here:
 func RegisterPeer(targetAddress string, hostname string, address string) {
+	//peer.UpdatePeerEllipticKeys(&assignedPeer)
 	var newPeer peer.Peer = peer.CreatePeer(
 		peer.WithHostname(hostname),
 		peer.WithAddress(address),
@@ -31,7 +32,6 @@ func RegisterPeer(targetAddress string, hostname string, address string) {
 	body, err := json.Marshal(newPeer)
 	if err != nil {
 		panic("err")
-
 	}
 	res := http.POST(assignedPeer, targetAddress+"/peer", string(body), &newPeer)
 	if res.StatusCode != http.CREATED {
@@ -48,25 +48,31 @@ func RegisterPeer(targetAddress string, hostname string, address string) {
 func DeletePeer(peer.Peer) {
 	res := http.DELETE(assignedPeer, assignedPeer.Address+"/peer", nil, "hostId", assignedPeer.Hostname)
 	if res.StatusCode != http.OK {
-		fmt.Printf("Error removing the peer.")
+		fmt.Printf("Error removing the peer.\n")
 	}
 }
 
 func IsPeerInitialized() bool {
-	var currentPeers []peer.Peer = peer.GetPeers()
+	var currentPeers []peer.Peer = peer.GetPeers(string(""), string(""))
 	for _, currentPeer := range currentPeers {
-		if currentPeer.Role == peer.OUTBOUND && isPeerOnline(currentPeer) {
-			assignedPeer = currentPeer
+		if currentPeer.Role == peer.OUTBOUND {
+			assignedPeer = synchronizeWithPeer(currentPeer)
 		}
 	}
 	return assignedPeer.Address != ""
 }
 
-func isPeerOnline(peer peer.Peer) bool {
-	res := http.GET(peer, peer.Address+"/peer", nil)
-	if res == nil || (res != nil && res.StatusCode != http.OK) {
-		fmt.Printf("Peer %s is offline.\n", peer.Hostname)
-		return false
+func synchronizeWithPeer(currentPeer peer.Peer) peer.Peer {
+	synchronizedPeer := make([]peer.Peer, 5)
+	res := http.GET(
+		currentPeer,
+		currentPeer.Address+"/peer",
+		&synchronizedPeer,
+		"hostname",
+		currentPeer.Hostname)
+	if res == nil || res.StatusCode != http.OK {
+		fmt.Printf("Peer %s is offline.\n", currentPeer.Hostname)
+		return peer.CreateDefaultPeer()
 	}
-	return true
+	return synchronizedPeer[0]
 }
