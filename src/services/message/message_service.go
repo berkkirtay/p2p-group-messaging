@@ -1,11 +1,12 @@
 // Copyright (c) 2024 Berk Kirtay
 
-package room
+package message
 
 import (
 	"context"
 	"main/infra/store"
 	"main/services/audit"
+	"main/services/room"
 	"slices"
 	"strconv"
 
@@ -30,10 +31,11 @@ type MessageService interface {
 }
 
 var messageRepository = store.NewRepo("messaging")
+var roomRepository = store.NewRepo("rooms")
 
 func ReceiveMessages(id string, size string, sort string, userId string) []Message {
 	var messages []Message = []Message{}
-	var room Room = fetchTargetRoom(id)
+	var room room.Room = fetchTargetRoom(id)
 	// Check if the user is in the room:
 	if !validateUserRoomAuth(room, userId) {
 		return messages
@@ -64,15 +66,17 @@ func ReceiveMessages(id string, size string, sort string, userId string) []Messa
 			if err != nil {
 				panic(err)
 			}
+			updateOrDeleteMessageForRecipients(currentMessage, userId)
 			messages = append(messages, currentMessage)
 		}
 	}
+
 	return messages
 }
 
 func SendAMessage(id string, userId string, message Message) Message {
 	// Check if the user is in the room:
-	var room Room = fetchTargetRoom(id)
+	var room room.Room = fetchTargetRoom(id)
 	if !validateUserRoomAuth(room, userId) {
 		return CreateDefaultMessage()
 	}
@@ -83,22 +87,22 @@ func SendAMessage(id string, userId string, message Message) Message {
 	return builtMessage
 }
 
-func fetchTargetRoom(id string) Room {
-	var room Room
+func fetchTargetRoom(id string) room.Room {
+	var room room.Room
 	filter := bson.D{{Key: "id", Value: id}}
-	cur, err := repository.FindOne(filter, nil)
+	cur, err := roomRepository.FindOne(filter, nil)
 	if cur != nil && err == nil {
 		cur.Decode(&room)
 	}
 	return room
 }
 
-func validateUserRoomAuth(room Room, userId string) bool {
+func validateUserRoomAuth(room room.Room, userId string) bool {
 	return slices.Contains(room.Members, userId)
 }
 
 // TODO change
-func buildAMessage(room Room, userId string, message Message) Message {
+func buildAMessage(room room.Room, userId string, message Message) Message {
 	// Generate an id for message:
 	var lastRecord Message = Message{}
 	var newMessageId int
@@ -107,7 +111,7 @@ func buildAMessage(room Room, userId string, message Message) Message {
 	if res == nil && err == nil {
 		// No message is found in the DB,
 		// Generate a default id:
-		newMessageId = 100000
+		newMessageId = 1000000000
 	} else {
 		res.Decode(&lastRecord)
 		newMessageId, _ = strconv.Atoi(lastRecord.Id)
@@ -116,8 +120,30 @@ func buildAMessage(room Room, userId string, message Message) Message {
 		WithMessageId(strconv.Itoa(newMessageId+1)),
 		WithUserId(userId),
 		WithRoomId(room.Id),
+		WithRecipients(room.Members),
 		WithText(message.Text),
 		WithIsEncrypted(message.IsEncrypted),
 		WithMessageSignature(nil),
 		WithMessageAudit(audit.CreateAuditForMessage()))
+}
+
+func updateOrDeleteMessageForRecipients(message Message, recipientToRemove string) {
+	if recipientToRemove != "" {
+		var index int = -1
+		for i, recipient := range message.Recipients {
+			if recipient == recipientToRemove {
+				index = i
+				break
+			}
+		}
+		if index != -1 {
+			message.Recipients = slices.Delete(message.Recipients, index, index+1)
+		}
+	}
+	filter := bson.D{{Key: "id", Value: message.Id}}
+	if len(message.Recipients) == 0 {
+		//	messageRepository.DeleteOne(filter, nil)
+	} else {
+		messageRepository.ReplaceOne(filter, nil, message)
+	}
 }

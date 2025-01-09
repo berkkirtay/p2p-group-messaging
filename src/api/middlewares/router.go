@@ -16,6 +16,7 @@ func InitializeRouters(routerGroup *gin.RouterGroup) {
 	controllers.AuthRouter(routerGroup)
 	routerGroup.Use(ValidateAuthentication())
 	controllers.Roomouter(routerGroup)
+	controllers.InfoRouter(routerGroup)
 }
 
 func handleGenericPanic(c *gin.Context, err any) {

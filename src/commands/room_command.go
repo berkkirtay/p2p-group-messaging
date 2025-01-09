@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"main/infra/cryptography"
 	"main/infra/http"
+	"main/services/message"
 	"main/services/room"
 	"main/services/user"
 	"sort"
@@ -47,7 +48,8 @@ func HandleCreateRoom(command []string) {
 	if err != nil {
 		return
 	}
-	var room = room.CreateRoom(room.WithName(command[1]),
+	var room = room.CreateRoom(
+		room.WithName(command[1]),
 		room.WithInfo(command[2]),
 		room.WithCapacity(capacity),
 		room.WithPassword(command[4]))
@@ -65,9 +67,9 @@ func HandleCreateRoom(command []string) {
 }
 
 func HandleText(command string) {
-	var message room.Message = room.CreateMessage(
-		room.WithText(cryptography.EncryptAES(command, currentRoom.RoomMasterKey)),
-		room.WithIsEncrypted(true))
+	var message message.Message = message.CreateMessage(
+		message.WithText(cryptography.EncryptAES(command, currentRoom.RoomMasterKey)),
+		message.WithIsEncrypted(true))
 	body, err := json.Marshal(message)
 	if err != nil {
 		fmt.Printf("Error: %s", err)
@@ -85,12 +87,12 @@ func HandleText(command string) {
 		return
 	}
 	fmt.Printf("\033[1A\033[K")
+	sendMessageNotification()
 }
 
 func HandleJoinRoom(command []string, user user.User) {
 	currentUser = user
 	joinRoom(command[1], command[2])
-	retrieveMessagesFlag = true
 	go messageLoop()
 }
 
@@ -120,22 +122,51 @@ func joinRoom(roomId string, roomPassword string) {
 	}
 }
 
-// TODO: Can we implement a event listener instead of polling the peer constantly?
+// TODO: Can we implement a event listener instead of polling the peer constantly?\
+// Done but needs to be revised.
 func messageLoop() {
 	for {
-		if !retrieveMessagesFlag {
-			break
-		}
+		wait := make(chan bool)
+		go func() {
+			for {
+				if retrieveMessagesFlag {
+					wait <- true
+					return
+				}
+				time.Sleep(2000 * time.Millisecond)
+			}
+		}()
+		<-wait
 		var messageSize int64 = fetchLastMessageId() - lastMessageId
 		if messageSize > 0 {
 			getMessages(messageSize)
 		}
-		time.Sleep(3000 * time.Millisecond)
+		retrieveMessagesFlag = false
 	}
 }
 
+func NewMessageAlert() {
+	retrieveMessagesFlag = true
+}
+
+func sendMessageNotification() {
+	res := http.POST(
+		assignedPeer,
+		assignedPeer.Address+"/info",
+		"",
+		nil,
+		"type",
+		"NEW_MESSAGE_INFO",
+	)
+	if res.StatusCode != http.OK {
+		fmt.Printf("Error")
+		return
+	}
+	NewMessageAlert()
+}
+
 func getMessages(size int64) {
-	var messages = []room.Message{}
+	var messages = []message.Message{}
 	res := http.GET(
 		assignedPeer,
 		assignedPeer.Address+"/room/messages",
@@ -144,13 +175,13 @@ func getMessages(size int64) {
 		currentRoom.Id,
 		"size",
 		strconv.FormatInt(size, 10))
-	if res.StatusCode != http.INTERNAL_SERVER_ERROR {
+	if res.StatusCode != http.INTERNAL_SERVER_ERROR && len(messages) > 0 {
 		printMessages(messages)
 		lastMessageId, _ = strconv.ParseInt(messages[len(messages)-1].Id, 10, 64)
 	}
 }
 
-func printMessages(messages []room.Message) {
+func printMessages(messages []message.Message) {
 	sort.Slice(messages, func(i, j int) bool {
 		return messages[i].Id < messages[j].Id
 	})
@@ -170,7 +201,7 @@ func printMessages(messages []room.Message) {
 }
 
 func fetchLastMessageId() int64 {
-	var messages = []room.Message{}
+	var messages = []message.Message{}
 	res := http.GET(
 		assignedPeer,
 		assignedPeer.Address+"/room/messages",
@@ -186,7 +217,7 @@ func fetchLastMessageId() int64 {
 	return 0
 }
 
-func buildAReadableText(message room.Message) string {
+func buildAReadableText(message message.Message) string {
 	if message.IsEncrypted {
 		return cryptography.DecryptAES(message.Text, currentRoom.RoomMasterKey)
 	} else {

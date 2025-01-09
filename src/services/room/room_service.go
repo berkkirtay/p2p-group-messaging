@@ -18,12 +18,12 @@ import (
 )
 
 type RoomService interface {
-	GetRooms(id string, size string) []Room            // GET
-	CreateRooms(rooms []Room) []Room                   // POST
-	DeleteRooms(ids []string) []Room                   // DELETE
-	UpdateRoom(id string, room Room) Room              // PUT
-	JoinRoom(id string, room Room, userId string) Room // POST
-	LeaveRoom(id string) bool                          // POST
+	GetRooms(id string, size string) []Room
+	CreateRooms(rooms []Room) []Room
+	DeleteRooms(ids []string) []Room
+	UpdateRoom(id string, room Room) Room
+	JoinRoom(id string, room Room, userId string) Room
+	LeaveRoom(id string) bool
 	KickUser(roomId string, userId string, userToBeKicked string) bool
 	BanUser(roomId string, userId string, userToBeBanned string) bool
 }
@@ -166,8 +166,8 @@ func LeaveRoom(id string, userId string) bool {
 	}
 
 	var index int = -1
-	for i, roomUserId := range actualRoom.Members {
-		if roomUserId == userId {
+	for i, currentUserId := range actualRoom.Members {
+		if currentUserId == userId {
 			index = i
 			break
 		}

@@ -4,6 +4,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"main/services/message"
 	"main/services/room"
 	"net/http"
 	"strings"
@@ -74,7 +75,7 @@ func leaveRoom(c *gin.Context) {
 }
 
 func receiveMessagesHTTP(c *gin.Context) {
-	res := room.ReceiveMessages(
+	res := message.ReceiveMessages(
 		c.Query("id"),
 		c.Query("size"),
 		c.Query("sort"),
@@ -87,13 +88,13 @@ func receiveMessagesHTTP(c *gin.Context) {
 }
 
 func sendAMessageHTTP(c *gin.Context) {
-	var messageBody room.Message
+	var messageBody message.Message
 	err := json.NewDecoder(c.Request.Body).Decode(&messageBody)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error:": err.Error()})
 		return
 	}
-	res := room.SendAMessage(c.Query("id"), c.Request.Header.Get("Session"), messageBody)
+	res := message.SendAMessage(c.Query("id"), c.Request.Header.Get("Session"), messageBody)
 	if res.Id == "" {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"Error:": "Message could not be sent."})
 	}

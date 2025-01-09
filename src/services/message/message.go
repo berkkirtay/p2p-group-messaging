@@ -1,6 +1,6 @@
 // Copyright (c) 2024 Berk Kirtay
 
-package room
+package message
 
 import (
 	"main/infra/cryptography"
@@ -11,6 +11,7 @@ type Message struct {
 	Id          string                     `json:"id,omitempty" bson:"id,omitempty"`
 	UserId      string                     `json:"userId,omitempty" bson:"userId,omitempty"`
 	RoomId      string                     `json:"roomId,omitempty" bson:"roomId,omitempty"`
+	Recipients  []string                   `json:"recipients,omitempty" bson:"recipients,omitempty"`
 	Text        string                     `json:"text,omitempty" bson:"text,omitempty"`
 	Signature   *cryptography.Cryptography `json:"signature,omitempty" bson:"signature,omitempty"`
 	IsEncrypted bool                       `json:"isEncrypted,omitempty" bson:"isEncrypted,omitempty"`
@@ -36,6 +37,13 @@ func WithUserId(userId string) MessageOption {
 func WithRoomId(roomId string) MessageOption {
 	return func(message Message) Message {
 		message.RoomId = roomId
+		return message
+	}
+}
+
+func WithRecipients(recipients []string) MessageOption {
+	return func(message Message) Message {
+		message.Recipients = recipients
 		return message
 	}
 }

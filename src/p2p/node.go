@@ -16,7 +16,7 @@ const (
 func StartNode() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
-	//app.Use(gin.Logger())
+	app.Use(gin.Logger())
 	middlewares.InitializeSession(app)
 	router := app.Group(API)
 	middlewares.InitializeRouters(router)

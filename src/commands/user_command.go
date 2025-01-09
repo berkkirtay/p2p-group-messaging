@@ -144,7 +144,11 @@ func postLogin(authenticationModel auth.AuthenticationModel) auth.Authentication
 		fmt.Printf("Error: %s", err)
 		return auth.CreateDefaultAuthenticationModel()
 	}
-	res := http.POST(assignedPeer, assignedPeer.Address+"/auth", string(body), &authenticationModel)
+	res := http.POST(
+		assignedPeer,
+		assignedPeer.Address+"/auth",
+		string(body),
+		&authenticationModel)
 	if res.StatusCode == http.ACCEPTED {
 		authenticationModel.Cookies = res.Cookies()
 		return authenticationModel
