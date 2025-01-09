@@ -5,8 +5,8 @@ package cryptography
 import "crypto/ecdh"
 
 type Elliptic struct {
-	PublicKey  string           `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
-	PrivateKey *ecdh.PrivateKey `json:"-" bson:"-"`
+	PublicKey  string `json:"publicKey,omitempty" bson:"publicKey,omitempty"`
+	PrivateKey *ecdh.PrivateKey
 }
 
 type EllipticOption func(Elliptic) Elliptic

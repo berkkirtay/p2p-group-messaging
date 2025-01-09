@@ -11,7 +11,10 @@ import (
 )
 
 func getPeers(c *gin.Context) {
-	res := peer.GetPeers(c.Query("hostname"), c.Query("role"))
+	res := peer.GetPeers(
+		c.Query("hostname"),
+		c.Query("role"),
+		c.Request.Header.Get("Session"))
 	if len(res) == 0 {
 		c.JSON(http.StatusNotFound, res)
 	} else {

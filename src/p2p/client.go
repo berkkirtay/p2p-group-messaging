@@ -9,6 +9,7 @@ import (
 // TODO: DB sync between peers is neecessary.
 
 func StartClient() {
+	commands.InitializePeer()
 	commands.InitializeCommandLine()
 	commands.HandleInput()
 }

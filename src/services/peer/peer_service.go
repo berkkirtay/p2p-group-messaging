@@ -4,16 +4,15 @@ package peer
 
 import (
 	"context"
-	"main/infra/cryptography"
 	"main/infra/store"
+	"main/services/auth"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 var repository = store.NewRepo("peer")
-var masterPeer Peer
 
-func GetPeers(hostname string, role string) []Peer {
+func GetPeers(hostname string, role string, userId string) []Peer {
 	var peers []Peer = []Peer{}
 	if hostname != "" && role != "" {
 		var peer Peer = Peer{}
@@ -23,7 +22,7 @@ func GetPeers(hostname string, role string) []Peer {
 		cur, err := repository.FindOne(filter, nil)
 		if cur != nil && err == nil {
 			cur.Decode(&peer)
-			UpdatePeerEllipticKeys(&peer)
+			enrichWithPeerEllipticKeys(&peer, userId)
 			peers = append(peers, peer)
 		}
 	} else {
@@ -34,7 +33,7 @@ func GetPeers(hostname string, role string) []Peer {
 			if err != nil {
 				panic(err)
 			}
-			UpdatePeerEllipticKeys(&currentPeer)
+			enrichWithPeerEllipticKeys(&currentPeer, userId)
 			peers = append(peers, currentPeer)
 		}
 	}
@@ -55,9 +54,6 @@ func PostPeer(peer Peer) Peer {
 	if cur == nil {
 		repository.InsertOne(builtPeer)
 	}
-	if peer.Role == INBOUND {
-		masterPeer = peer
-	}
 	return builtPeer
 }
 
@@ -67,16 +63,9 @@ func DeletePeer(hostname string) int64 {
 	return res.DeletedCount
 }
 
-func GetMasterPeer() Peer {
-	return masterPeer
-}
-
-func UpdatePeerEllipticKeys(peer *Peer) {
-	if peer.Cryptography.Elliptic.PrivateKey == nil {
-		peer.Cryptography.Elliptic = cryptography.CreateElliptic(
-			cryptography.WithEllipticKeys(cryptography.GenerateEllipticCurveKeys()))
-	}
-	if peer.Role == INBOUND {
-		masterPeer = *peer
+func enrichWithPeerEllipticKeys(peer *Peer, userId string) {
+	if userId != "" {
+		elliptic := auth.GetDiffieHellmanUserAuthentication(userId)
+		peer.Cryptography.Elliptic = &elliptic
 	}
 }

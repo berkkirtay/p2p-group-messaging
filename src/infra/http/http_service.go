@@ -45,20 +45,35 @@ func InitializeService(auth *auth.AuthenticationModel) {
 	}
 }
 
-func generateNextEncryptedToken(peer peer.Peer) {
-	if sessionAuth != nil && sessionAuth.Token != "" {
-		privateKey, publicKey := cryptography.GenerateEllipticCurveKeys()
-		key := cryptography.DiffieHellman(
-			privateKey,
-			peer.Cryptography.Elliptic.PublicKey)
-		encryptedToken := cryptography.EncryptAES(sessionAuth.Token, key)
+func generateNextEncryptedToken(currentPeer peer.Peer) {
+	if sessionAuth != nil && sessionAuth.Token != "" && currentPeer.Address != "" {
 		sessionHeader = CreateHeaderModel(
 			WithContentType("application/json"),
 			WithCookie(sessionAuth.Cookies),
-			WithSession(sessionAuth.Id),
-			WithAuthorization(encryptedToken),
+			WithSession(sessionAuth.Id))
+		privateKey, publicKey := cryptography.GenerateEllipticCurveKeys()
+		key := cryptography.DiffieHellman(
+			privateKey,
+			updateMasterPeer(currentPeer).Cryptography.Elliptic.PublicKey)
+		sessionHeader = CreateHeaderModel(
+			WithHeader(sessionHeader),
+			WithAuthorization(cryptography.EncryptAES(sessionAuth.Token, key)),
 			WithPublicKey(publicKey))
 	}
+}
+
+func updateMasterPeer(currentPeer peer.Peer) peer.Peer {
+	var peers []peer.Peer = []peer.Peer{}
+	res := GET(
+		peer.CreateDefaultPeer(),
+		currentPeer.Address+"/peer",
+		&peers,
+		"hostname",
+		currentPeer.Hostname)
+	if res == nil || res.StatusCode != OK {
+		return peer.Peer{}
+	}
+	return peers[0]
 }
 
 func GET(

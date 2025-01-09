@@ -1,10 +1,9 @@
 // Copyright (c) 2024 Berk Kirtay
 
-package p2p
+package network
 
 import (
 	"fmt"
-	"main/commands"
 	"math/rand"
 	"net"
 	"strconv"
@@ -25,23 +24,25 @@ import (
  */
 
 const (
+	CUSTOM_PEER_LOOKUP_API  string = "http://127.0.0.1:8080/api/peer"
 	LOCAL_BROADCAST_ADDRESS string = "224.0.0.1:9999"
 	NETWORK_NAME            string = "udp4"
 	MAX_BROADCAST_AMOUNT    int    = 2
+	PORT                    string = ":8080"
+	API                     string = "/api"
+	HTTP                           = "http://"
 	ADDRESS_FORMAT          string = HTTP + "%s" + PORT + API
 )
 
 var unique_udp_request_identifier int = 0
 var currentHost string = ""
 
-func HandlePeerConnection() {
-	initializeOutboundIP()
+func InitializeBroadcast() {
+	initializeHostOutboundAddress()
 	generateNextConnectionIdentifier()
-	go listenForPeerBroadcast()
-	startPeerBroadcast()
 }
 
-func startPeerBroadcast() {
+func StartPeerBroadcast() {
 	remote, err := net.ResolveUDPAddr(NETWORK_NAME, LOCAL_BROADCAST_ADDRESS)
 	if err != nil {
 		panic(err)
@@ -54,25 +55,19 @@ func startPeerBroadcast() {
 
 	// Continuously check if the current host has established a connection with any peer:
 	for i := 0; i < MAX_BROADCAST_AMOUNT; i++ {
-		if commands.IsPeerInitialized() {
-			return
-		}
-		fmt.Printf("Broadcasting for an active peer... %d\n", i)
+		fmt.Printf("Broadcasting for active peers... %d\n", i)
 		_, err = broadcast.Write([]byte(strconv.Itoa(unique_udp_request_identifier)))
 		if err != nil {
 			panic(err)
 		}
 		time.Sleep(1 * time.Second)
 	}
-
-	// Become a main peer in case no other peer exists:
-	fmt.Println("No active peer found, making yourself an active peer.")
-	commands.InitializeAMasterPeer(
-		currentHost,
-		fmt.Sprintf(ADDRESS_FORMAT, currentHost))
 }
 
-func listenForPeerBroadcast() {
+/*
+ * Listens for the next peer connection and returns @targetAddress
+ */
+func ListenForPeerBroadcast() string {
 	ipv4Addr, _ := net.ResolveUDPAddr(NETWORK_NAME, LOCAL_BROADCAST_ADDRESS)
 	conn, err := net.ListenUDP(NETWORK_NAME, ipv4Addr)
 	if err != nil {
@@ -103,20 +98,23 @@ func listenForPeerBroadcast() {
 			// Send your peer info to the sender and conclude broadcasting:
 			var remote_udp_request_identifier, _ = strconv.Atoi(string(buf[:n]))
 			if remote_udp_request_identifier != unique_udp_request_identifier {
-				var targetAddress string = fmt.Sprintf(
+				return fmt.Sprintf(
 					ADDRESS_FORMAT,
 					strings.Split(addr.String(),
 						":")[0])
-				commands.RegisterPeer(
-					targetAddress,
-					currentHost,
-					fmt.Sprintf(ADDRESS_FORMAT, currentHost))
 			}
 		}
 	}
 }
 
-func initializeOutboundIP() {
+/*
+ * returns @currentHost and @currentHostAddress
+ */
+func GetHostAddress() (string, string) {
+	return currentHost, fmt.Sprintf(ADDRESS_FORMAT, currentHost)
+}
+
+func initializeHostOutboundAddress() {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		panic(err)

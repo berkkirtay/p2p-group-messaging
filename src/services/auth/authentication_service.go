@@ -4,7 +4,6 @@ package auth
 
 import (
 	"main/infra/cryptography"
-	"main/services/peer"
 	"main/services/user"
 	"math/rand"
 	"strconv"
@@ -44,6 +43,11 @@ func authenticateWithPKCS(
 		var encryptedToken string = cryptography.EncryptRSA(
 			token,
 			receivedUser.Cryptography.PublicKey)
+		receivedUser.Cryptography.Elliptic = cryptography.CreateElliptic(
+			cryptography.WithEllipticKeys(cryptography.GenerateEllipticCurveKeys()))
+
+		authenticationMap[receivedUser.Id] = *receivedUser.Cryptography.Elliptic
+
 		return CreateAuthenticationModel(
 			WithId(actualUser.Id),
 			WithName(actualUser.Name),
@@ -67,20 +71,18 @@ func authenticateWithDiffieHellman(
 	if verification && receivedUser.Name == actualUser.Name &&
 		receivedUser.Cryptography.Sign == actualUser.Cryptography.Sign {
 		token := initializeSessionForUser(c, receivedUser)
+
 		authenticationMap[receivedUser.Id] = *cryptography.CreateElliptic(
-			cryptography.WithEllipticKeys(
-				peer.GetMasterPeer().Cryptography.Elliptic.PrivateKey,
-				peer.GetMasterPeer().Cryptography.Elliptic.PublicKey))
-		// cryptography.CreateElliptic(
-		// 	cryptography.WithEllipticKeys(
-		// 		cryptography.GenerateEllipticCurveKeys()))
+			cryptography.WithEllipticKeys(cryptography.GenerateEllipticCurveKeys()))
+
 		key := cryptography.DiffieHellman(
 			authenticationMap[receivedUser.Id].PrivateKey,
 			receivedUser.Cryptography.Elliptic.PublicKey)
 
 		encryptedToken := cryptography.EncryptAES(token, key)
 		crypto := cryptography.CreateCryptography(
-			cryptography.WithPublicKey(authenticationMap[receivedUser.Id].PublicKey))
+			cryptography.WithElliptic(cryptography.CreateElliptic(
+				cryptography.WithEllipticPublicKey(authenticationMap[receivedUser.Id].PublicKey))))
 		return CreateAuthenticationModel(
 			WithId(actualUser.Id),
 			WithName(actualUser.Name),
@@ -129,6 +131,10 @@ func CalculateDiffieHellmanUserAuthentication(
 	encryptedToken string) string {
 	key := cryptography.DiffieHellman(authenticationMap[userId].PrivateKey, userPublicKey)
 	return cryptography.DecryptAES(encryptedToken, key)
+}
+
+func GetDiffieHellmanUserAuthentication(userId string) cryptography.Elliptic {
+	return authenticationMap[userId]
 }
 
 func generateToken(user user.User, nonce string) string {

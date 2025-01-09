@@ -38,9 +38,9 @@ func WithSession(session string) HeaderModelOption {
 	}
 }
 
-func WithPublicKey(PublicKey string) HeaderModelOption {
+func WithPublicKey(publicKey string) HeaderModelOption {
 	return func(headerModel HeaderModel) HeaderModel {
-		headerModel.PublicKey = PublicKey
+		headerModel.PublicKey = publicKey
 		return headerModel
 	}
 }
@@ -55,6 +55,18 @@ func WithCookie(cookie []*http.Cookie) HeaderModelOption {
 func WithContentType(contentType string) HeaderModelOption {
 	return func(headerModel HeaderModel) HeaderModel {
 		headerModel.ContentType = contentType
+		return headerModel
+	}
+}
+
+func WithHeader(headerModelCopy HeaderModel) HeaderModelOption {
+	return func(headerModel HeaderModel) HeaderModel {
+		headerModel.Connection = headerModelCopy.Connection
+		headerModel.Authorization = headerModelCopy.Authorization
+		headerModel.Session = headerModelCopy.Session
+		headerModel.PublicKey = headerModelCopy.PublicKey
+		headerModel.Cookie = headerModelCopy.Cookie
+		headerModel.ContentType = headerModelCopy.ContentType
 		return headerModel
 	}
 }

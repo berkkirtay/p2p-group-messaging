@@ -18,7 +18,6 @@ const (
 var currentMode string
 
 func InitializeCommandLine() {
-	fmt.Printf("A master peer is initialized: %s\n", assignedPeer.Hostname)
 	fmt.Println("To see available commands, please type 'help'.")
 	currentMode = COMMAND_MODE
 }

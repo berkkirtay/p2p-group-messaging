@@ -59,7 +59,7 @@ func HandleLogin(command []string) {
 	fmt.Printf("Hello %s! Your authentication process is ongoing..\n", respBody[0].Name)
 	var authentication auth.AuthenticationModel = auth.CreateDefaultAuthenticationModel()
 	if len(command) == 2 {
-		authentication = loginWithPKCS(userLogin, respBody[0].Id)
+		authentication = loginWithECDH(userLogin, respBody[0].Id)
 	} else if len(command) == 3 {
 		password := command[2]
 		authentication = loginWithPassword(userLogin, password)
@@ -74,7 +74,7 @@ func HandleLogin(command []string) {
 	}
 }
 
-func loginWithPKCS(userLogin string, userId string) auth.AuthenticationModel {
+func loginWithECDH(userLogin string, userId string) auth.AuthenticationModel {
 	publicKey := readFromFile(fmt.Sprintf("./keys/PUBLIC_KEY_%s", userLogin))
 	privateKey := readFromFile(fmt.Sprintf("./keys/PRIVATE_KEY_%s", userLogin))
 	sign := readFromFile(fmt.Sprintf("./keys/SIGN_%s", userLogin))
@@ -83,24 +83,53 @@ func loginWithPKCS(userLogin string, userId string) auth.AuthenticationModel {
 	userCrypto := cryptography.CreateCryptography(
 		cryptography.WithSign(sign),
 		cryptography.WithPublicKey(publicKey),
+		cryptography.WithPrivateKey(privateKey),
 		cryptography.WithElliptic(
 			cryptography.CreateElliptic(
-				cryptography.WithEllipticPublicKey(ellipticPublic))))
+				cryptography.WithEllipticPublicKey(ellipticPublic),
+				cryptography.WithEllipticPrivateKey(ellipticPrivate))))
 
 	authentication := postLogin(auth.CreateAuthenticationModel(
 		auth.WithId(userId),
 		auth.WithName(userLogin),
 		auth.WithCryptography(userCrypto)))
-
 	if authentication.Id != "" {
 		key := cryptography.DiffieHellman(
 			ellipticPrivate,
-			assignedPeer.Cryptography.Elliptic.PublicKey)
+			authentication.Cryptography.Elliptic.PublicKey)
 		authentication.Token = cryptography.DecryptAES(authentication.Token, key)
 		authentication.Cryptography.PrivateKey = privateKey
 	}
 	return authentication
 }
+
+// func loginWithPKCS(userLogin string, userId string) auth.AuthenticationModel {
+// 	publicKey := readFromFile(fmt.Sprintf("./keys/PUBLIC_KEY_%s", userLogin))
+// 	privateKey := readFromFile(fmt.Sprintf("./keys/PRIVATE_KEY_%s", userLogin))
+// 	sign := readFromFile(fmt.Sprintf("./keys/SIGN_%s", userLogin))
+
+// 	ellipticPrivate, ellipticPublic := cryptography.GenerateEllipticCurveKeys()
+// 	userCrypto := cryptography.CreateCryptography(
+// 		cryptography.WithSign(sign),
+// 		cryptography.WithPublicKey(publicKey),
+// 		cryptography.WithElliptic(
+// 			cryptography.CreateElliptic(
+// 				cryptography.WithEllipticPublicKey(ellipticPublic))))
+
+// 	authentication := postLogin(auth.CreateAuthenticationModel(
+// 		auth.WithId(userId),
+// 		auth.WithName(userLogin),
+// 		auth.WithCryptography(userCrypto)))
+
+// 	if authentication.Id != "" {
+// 		key := cryptography.DiffieHellman(
+// 			ellipticPrivate,
+// 			assignedPeer.Cryptography.Elliptic.PublicKey)
+// 		authentication.Token = cryptography.DecryptAES(authentication.Token, key)
+// 		authentication.Cryptography.PrivateKey = privateKey
+// 	}
+// 	return authentication
+// }
 
 func loginWithPassword(userLogin string, password string) auth.AuthenticationModel {
 	return postLogin(auth.CreateAuthenticationModel(

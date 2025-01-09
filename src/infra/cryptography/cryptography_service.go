@@ -217,6 +217,7 @@ func DecryptAES(cipherText string, key string) string {
 	plainText := make([]byte, len(decryptedText))
 	cbc.CryptBlocks(plainText, decryptedText)
 	plainText, err = pkcs7pad.Unpad(plainText)
+	// todo plainText is empty so thats why we get unPadding error
 	if err != nil {
 		panic(err)
 	}

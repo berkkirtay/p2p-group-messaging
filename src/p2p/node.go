@@ -8,6 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	ADDRESS string = ":8080"
+	API     string = "/api"
+)
+
 func StartNode() {
 	gin.SetMode(gin.ReleaseMode)
 	app := gin.New()
