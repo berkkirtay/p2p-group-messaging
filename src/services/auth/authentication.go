@@ -60,6 +60,18 @@ func WithCookies(cookies []*http.Cookie) AuthenticationModelOption {
 	}
 }
 
+func WithAuthentication(newAuthentication AuthenticationModel) AuthenticationModelOption {
+	return func(authenticationModel AuthenticationModel) AuthenticationModel {
+		authenticationModel.Id = newAuthentication.Id
+		authenticationModel.Name = newAuthentication.Name
+		authenticationModel.Password = newAuthentication.Password
+		authenticationModel.Token = newAuthentication.Token
+		authenticationModel.Cryptography = newAuthentication.Cryptography
+		authenticationModel.Cookies = newAuthentication.Cookies
+		return authenticationModel
+	}
+}
+
 func CreateDefaultAuthenticationModel() AuthenticationModel {
 	return AuthenticationModel{}
 }

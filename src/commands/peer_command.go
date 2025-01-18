@@ -11,17 +11,15 @@ import (
 	"main/services/peer"
 )
 
+var thisPeer peer.Peer
 var assignedPeer peer.Peer
 
-func InitializePeer() {
-	network.InitializeBroadcast()
+func InitializePeer(identifier string) {
+	network.InitializeBroadcast(identifier)
 	network.StartPeerBroadcast()
+	handleUserPeerSelection()
+	finalizeInitialization()
 	go peerListenerLoop()
-
-	var remotePeers []peer.Peer = fetchAvailablePeers()
-	assignedPeer = handleUserPeerSelection(remotePeers)
-	peer.PostPeer(assignedPeer)
-	fmt.Printf("A master peer is initialized: %s\n", assignedPeer.Hostname)
 }
 
 func DeletePeer(peer.Peer) {
@@ -36,26 +34,31 @@ func DeletePeer(peer.Peer) {
 	}
 }
 
+func GetMainPeer() peer.Peer {
+	return assignedPeer
+}
+
+func GetNode() peer.Peer {
+	return thisPeer
+}
+
 func peerListenerLoop() {
 	for {
-		var targetAddress string = network.ListenForPeerBroadcast()
-		hostname, address := network.GetHostAddress()
-		registerPeer(targetAddress, hostname, address)
+		targetHostname, targetAddress := network.ListenForPeerBroadcast()
+		registerPeer(targetAddress, targetHostname)
 	}
 }
 
-func registerPeer(targetAddress string, hostname string, address string) {
+func registerPeer(targetAddress string, targetHostname string) {
 	var newPeer peer.Peer = peer.CreatePeer(
-		peer.WithHostname(hostname),
-		peer.WithAddress(address),
+		peer.WithHostname(assignedPeer.Hostname),
+		peer.WithAddress(assignedPeer.Address),
 		peer.WithRole(peer.OUTBOUND),
-		peer.WithCryptography(cryptography.CreateCommonCrypto()))
-
+		peer.WithCryptography(assignedPeer.Cryptography))
 	body, err := json.Marshal(newPeer)
 	if err != nil {
 		panic("err")
 	}
-
 	// Sending own node information to the incoming remote peer
 	res := http.POST(assignedPeer, targetAddress+"/peer", string(body), &newPeer)
 	if res.StatusCode != http.CREATED {
@@ -64,10 +67,13 @@ func registerPeer(targetAddress string, hostname string, address string) {
 	// Saving the remote peer information to your own database
 	peer.PostPeer(peer.CreatePeer(
 		peer.WithPeer(newPeer),
+		peer.WithHostname(targetHostname),
+		peer.WithAddress(targetAddress),
 		peer.WithRole(peer.INBOUND)))
 }
 
-func handleUserPeerSelection(peers []peer.Peer) peer.Peer {
+func handleUserPeerSelection() {
+	var peers []peer.Peer = fetchOutboundPeers()
 	if len(peers) > 0 {
 		fmt.Println("--------------")
 		fmt.Println("i |	Hostname	|	Address		")
@@ -80,11 +86,12 @@ func handleUserPeerSelection(peers []peer.Peer) peer.Peer {
 		var number int
 		_, err := fmt.Scanf("%d", &number)
 		if err == nil && number <= len(peers)-1 && number != -1 {
-			return peers[number]
+			assignedPeer = peers[number]
+			return
 		}
 	}
 	fmt.Println("No connection has been done to any peer. Initializing this node as an active peer.")
-	return initializeAMasterPeer()
+	assignedPeer = initializeAMasterPeer()
 }
 
 func initializeAMasterPeer() peer.Peer {
@@ -92,17 +99,40 @@ func initializeAMasterPeer() peer.Peer {
 	return peer.CreatePeer(
 		peer.WithHostname(hostname),
 		peer.WithAddress(address),
-		peer.WithRole(peer.INBOUND),
+		peer.WithRole(peer.OUTBOUND),
 		peer.WithCryptography(cryptography.CreateCommonCrypto()))
 }
 
-func fetchAvailablePeers() []peer.Peer {
+func finalizeInitialization() {
+	if thisPeer.Address == assignedPeer.Address {
+		thisPeer = peer.CreatePeer(peer.WithPeer(assignedPeer))
+	} else {
+		hostname, address := network.GetHostAddress()
+		thisPeer = peer.CreatePeer(
+			peer.WithHostname(hostname),
+			peer.WithAddress(address))
+	}
+	peer.PostPeer(assignedPeer)
+	fmt.Printf("A master peer is initialized: %s\n", assignedPeer.Hostname)
+}
+
+func fetchOutboundPeers() []peer.Peer {
+	return fetchAvailablePeers(peer.OUTBOUND)
+}
+
+func fetchInboundPeers() []peer.Peer {
+	return fetchAvailablePeers(peer.INBOUND)
+}
+
+func fetchAvailablePeers(peerRole string) []peer.Peer {
 	var remotePeers map[string]peer.Peer = make(map[string]peer.Peer)
 	var currentPeers []peer.Peer = peer.GetPeers(string(""), string(""), string(""))
 	for _, currentPeer := range currentPeers {
-		if currentPeer.Role == peer.OUTBOUND {
+		if currentPeer.Role == peerRole { //
 			for _, peer := range synchronizeWithPeer(currentPeer) {
-				remotePeers[peer.Hostname] = peer
+				if peer.Role == peerRole {
+					remotePeers[peer.Address] = peer
+				}
 			}
 		}
 	}
@@ -116,13 +146,13 @@ func fetchAvailablePeers() []peer.Peer {
 func synchronizeWithPeer(currentPeer peer.Peer) []peer.Peer {
 	var synchronizedPeers []peer.Peer = []peer.Peer{}
 	res := http.GET(
-		currentPeer,
+		peer.CreateDefaultPeer(),
 		currentPeer.Address+"/peer",
 		&synchronizedPeers,
 		"hostname",
 		currentPeer.Hostname)
 	if res == nil || res.StatusCode != http.OK {
-		fmt.Printf("Peer %s is offline.\n", currentPeer.Hostname)
+		//fmt.Printf("Peer %s is offline.\n", currentPeer.Hostname)
 		return []peer.Peer{}
 	}
 	return synchronizedPeers

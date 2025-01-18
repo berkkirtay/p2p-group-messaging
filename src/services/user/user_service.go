@@ -113,14 +113,10 @@ func buildUser(user User) User {
 			user.Role)
 	}
 	return CreateUser(
+		WithUser(user),
 		WithId(strconv.Itoa(newUserId+1)),
-		WithName(user.Name),
-		WithPassword(user.Password),
-		WithRole(user.Role),
 		WithCryptography(userCrypto),
-		WithActions(nil),
-		WithAudit(user.Audit),
-		WithIsPeer(user.IsPeer))
+		WithActions(nil))
 }
 
 func PutUser(id string, user User) User {

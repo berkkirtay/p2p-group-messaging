@@ -76,6 +76,20 @@ func WithIsPeer(isPeer bool) UserOption {
 	}
 }
 
+func WithUser(newUser User) UserOption {
+	return func(user User) User {
+		user.Id = newUser.Id
+		user.Name = newUser.Name
+		user.Password = newUser.Password
+		user.Role = newUser.Role
+		user.Cryptography = newUser.Cryptography
+		user.Actions = newUser.Actions
+		user.Audit = newUser.Audit
+		user.IsPeer = newUser.IsPeer
+		return user
+	}
+}
+
 func CreateDefaultUser() User {
 	return User{}
 }

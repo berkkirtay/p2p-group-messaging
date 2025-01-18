@@ -16,8 +16,8 @@ func GetPeers(hostname string, role string, userId string) []Peer {
 	var peers []Peer = []Peer{}
 	if hostname != "" && role != "" {
 		var peer Peer = Peer{}
-		filter := bson.D{{
-			Key: "hostname", Value: hostname},
+		filter := bson.D{
+			{Key: "hostname", Value: hostname},
 			{Key: "role", Value: role}}
 		cur, err := repository.FindOne(filter, nil)
 		if cur != nil && err == nil {
@@ -41,18 +41,16 @@ func GetPeers(hostname string, role string, userId string) []Peer {
 }
 
 func PostPeer(peer Peer) Peer {
-	builtPeer := CreatePeer(
-		WithHostname(peer.Hostname),
-		WithName(peer.Name),
-		WithAddress(peer.Address),
-		WithRole(peer.Role),
-		WithCryptography(peer.Cryptography))
+	builtPeer := CreatePeer(WithPeer(peer))
 	filter := bson.D{
-		{Key: "hostname", Value: builtPeer.Hostname},
-		{Key: "role", Value: builtPeer.Role}}
+		{Key: "address", Value: builtPeer.Address}}
+	// ,
+	// {Key: "role", Value: builtPeer.Role}
 	cur, _ := repository.FindOne(filter, nil)
 	if cur == nil {
 		repository.InsertOne(builtPeer)
+	} else {
+		repository.ReplaceOne(filter, nil, builtPeer)
 	}
 	return builtPeer
 }
@@ -65,7 +63,7 @@ func DeletePeer(hostname string) int64 {
 
 func enrichWithPeerEllipticKeys(peer *Peer, userId string) {
 	if userId != "" {
-		elliptic := auth.GetDiffieHellmanUserAuthentication(userId)
+		elliptic := auth.GetDiffieHellmanKeyForUser(userId)
 		peer.Cryptography.Elliptic = &elliptic
 	}
 }

@@ -40,7 +40,7 @@ func isAuthenticated(c *gin.Context) bool {
 	userId := c.Request.Header.Get("Session")
 	publicKey := c.Request.Header.Get("PublicKey")
 	if publicKey != "" {
-		authToken = auth.CalculateDiffieHellmanUserAuthentication(
+		authToken = auth.CalculateTokenWithDiffieHellman(
 			userId,
 			publicKey,
 			authToken)

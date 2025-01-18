@@ -29,6 +29,18 @@ func Authenticate(authBody AuthenticationModel, c *gin.Context) AuthenticationMo
 	}
 }
 
+func CalculateTokenWithDiffieHellman(
+	userId string,
+	userPublicKey string,
+	encryptedToken string) string {
+	key := cryptography.DiffieHellman(authenticationMap[userId].PrivateKey, userPublicKey)
+	return cryptography.DecryptAES(encryptedToken, key)
+}
+
+func GetDiffieHellmanKeyForUser(userId string) cryptography.Elliptic {
+	return authenticationMap[userId]
+}
+
 func authenticateWithPKCS(
 	receivedUser user.User,
 	actualUser user.User,
@@ -123,18 +135,6 @@ func initializeSessionForUser(c *gin.Context, user user.User) string {
 	session.Set(token, user.Id)
 	session.Save()
 	return token
-}
-
-func CalculateDiffieHellmanUserAuthentication(
-	userId string,
-	userPublicKey string,
-	encryptedToken string) string {
-	key := cryptography.DiffieHellman(authenticationMap[userId].PrivateKey, userPublicKey)
-	return cryptography.DecryptAES(encryptedToken, key)
-}
-
-func GetDiffieHellmanUserAuthentication(userId string) cryptography.Elliptic {
-	return authenticationMap[userId]
 }
 
 func generateToken(user user.User, nonce string) string {

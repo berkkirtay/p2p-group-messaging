@@ -84,11 +84,8 @@ func PostRoom(room Room) Room {
 		newRoomId, _ = strconv.Atoi(lastRecord.Id)
 	}
 	createdRoom := CreateRoom(
+		WithRoom(room),
 		WithId(strconv.Itoa(newRoomId+1)),
-		WithName(room.Name),
-		WithInfo(room.Info),
-		WithPassword(room.Password),
-		WithCapacity(room.Capacity),
 		WithMembers([]string{}),
 		WithRoomMasterKey(cryptography.GenerateARandomMasterSecret()),
 		WithSignature(cryptography.CreateCommonCrypto(

@@ -8,6 +8,7 @@ import (
 	"main/infra/cryptography"
 	"main/infra/http"
 	"main/services/message"
+	"main/services/peer"
 	"main/services/room"
 	"main/services/user"
 	"sort"
@@ -87,7 +88,7 @@ func HandleText(command string) {
 		return
 	}
 	fmt.Printf("\033[1A\033[K")
-	sendMessageNotification()
+	sendNotificationToMainPeer()
 }
 
 func HandleJoinRoom(command []string, user user.User) {
@@ -122,8 +123,6 @@ func joinRoom(roomId string, roomPassword string) {
 	}
 }
 
-// TODO: Can we implement a event listener instead of polling the peer constantly?\
-// Done but needs to be revised.
 func messageLoop() {
 	for {
 		wait := make(chan bool)
@@ -133,7 +132,7 @@ func messageLoop() {
 					wait <- true
 					return
 				}
-				time.Sleep(2000 * time.Millisecond)
+				time.Sleep(500 * time.Millisecond)
 			}
 		}()
 		<-wait
@@ -146,23 +145,30 @@ func messageLoop() {
 }
 
 func NewMessageAlert() {
-	retrieveMessagesFlag = true
+	if currentMode == ROOM_MODE {
+		retrieveMessagesFlag = true
+	}
 }
 
-func sendMessageNotification() {
-	res := http.POST(
-		assignedPeer,
-		assignedPeer.Address+"/info",
+func sendNotificationToMainPeer() {
+	sendNotificationRequest(assignedPeer)
+}
+
+func SendNotificationToPeers() {
+	for _, nextPeer := range fetchInboundPeers() {
+		sendNotificationRequest(nextPeer)
+	}
+}
+
+func sendNotificationRequest(nextPeer peer.Peer) {
+	http.POST(
+		peer.CreateDefaultPeer(),
+		nextPeer.Address+"/info",
 		"",
 		nil,
 		"type",
 		"NEW_MESSAGE_INFO",
 	)
-	if res.StatusCode != http.OK {
-		fmt.Printf("Error")
-		return
-	}
-	NewMessageAlert()
 }
 
 func getMessages(size int64) {
@@ -192,9 +198,12 @@ func printMessages(messages []message.Message) {
 			if roomUsers[message.UserId].Id == "" {
 				roomUsers[message.UserId] = getUser(message.UserId)
 			}
+			// fmt.Printf(
+			// 	"\r(%s) %s >> %s\n", message.Audit.CreateDate, roomUsers[message.UserId].Name,
+			// 	buildAReadableText(message))
+
 			fmt.Printf(
-				"\r%s >> %s\n", roomUsers[message.UserId].Name,
-				buildAReadableText(message))
+				"\r%s >> %s\n", roomUsers[message.UserId].Name, buildAReadableText(message))
 			fmt.Printf("%s >> ", currentUser.Name)
 		}
 	}
@@ -240,7 +249,6 @@ func getUser(userId string) user.User {
 }
 
 func HandleExitRoom() {
-	retrieveMessagesFlag = false
 	fmt.Println("You left the room.")
 }
 

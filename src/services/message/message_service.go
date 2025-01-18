@@ -117,12 +117,11 @@ func buildAMessage(room room.Room, userId string, message Message) Message {
 		newMessageId, _ = strconv.Atoi(lastRecord.Id)
 	}
 	return CreateMessage(
+		WithMessage(message),
 		WithMessageId(strconv.Itoa(newMessageId+1)),
 		WithUserId(userId),
 		WithRoomId(room.Id),
 		WithRecipients(room.Members),
-		WithText(message.Text),
-		WithIsEncrypted(message.IsEncrypted),
 		WithMessageSignature(nil),
 		WithMessageAudit(audit.CreateAuditForMessage()))
 }
@@ -142,7 +141,8 @@ func updateOrDeleteMessageForRecipients(message Message, recipientToRemove strin
 	}
 	filter := bson.D{{Key: "id", Value: message.Id}}
 	if len(message.Recipients) == 0 {
-		//	messageRepository.DeleteOne(filter, nil)
+		// messageRepository.DeleteOne(filter, nil)
+		messageRepository.ReplaceOne(filter, nil, message)
 	} else {
 		messageRepository.ReplaceOne(filter, nil, message)
 	}

@@ -76,6 +76,20 @@ func WithMessageAudit(audit *audit.Audit) MessageOption {
 	}
 }
 
+func WithMessage(newMessage Message) MessageOption {
+	return func(message Message) Message {
+		message.Id = newMessage.Id
+		message.UserId = newMessage.UserId
+		message.RoomId = newMessage.RoomId
+		message.Recipients = newMessage.Recipients
+		message.Text = newMessage.Text
+		message.Signature = newMessage.Signature
+		message.IsEncrypted = newMessage.IsEncrypted
+		message.Audit = newMessage.Audit
+		return message
+	}
+}
+
 func CreateDefaultMessage() Message {
 	return Message{}
 }

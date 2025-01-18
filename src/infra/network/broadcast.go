@@ -27,17 +27,21 @@ const (
 	CUSTOM_PEER_LOOKUP_API  string = "http://127.0.0.1:8080/api/peer"
 	LOCAL_BROADCAST_ADDRESS string = "224.0.0.1:9999"
 	NETWORK_NAME            string = "udp4"
-	MAX_BROADCAST_AMOUNT    int    = 2
+	MAX_BROADCAST_AMOUNT    int    = 3
 	PORT                    string = ":8080"
 	API                     string = "/api"
 	HTTP                           = "http://"
-	ADDRESS_FORMAT          string = HTTP + "%s" + PORT + API
+	ADDRESS_FORMAT          string = HTTP + "%s" + "%s" + API
 )
 
-var unique_udp_request_identifier int = 0
+var unique_udp_request_identifier string = ""
 var currentHost string = ""
+var currentHostPort = PORT
 
-func InitializeBroadcast() {
+func InitializeBroadcast(identifier string) {
+	if identifier != "" {
+		currentHostPort = identifier
+	}
 	initializeHostOutboundAddress()
 	generateNextConnectionIdentifier()
 }
@@ -56,18 +60,18 @@ func StartPeerBroadcast() {
 	// Continuously check if the current host has established a connection with any peer:
 	for i := 0; i < MAX_BROADCAST_AMOUNT; i++ {
 		fmt.Printf("Broadcasting for active peers... %d\n", i)
-		_, err = broadcast.Write([]byte(strconv.Itoa(unique_udp_request_identifier)))
+		_, err = broadcast.Write([]byte(unique_udp_request_identifier))
 		if err != nil {
 			panic(err)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(200 * time.Millisecond)
 	}
 }
 
 /*
  * Listens for the next peer connection and returns @targetAddress
  */
-func ListenForPeerBroadcast() string {
+func ListenForPeerBroadcast() (string, string) {
 	ipv4Addr, _ := net.ResolveUDPAddr(NETWORK_NAME, LOCAL_BROADCAST_ADDRESS)
 	conn, err := net.ListenUDP(NETWORK_NAME, ipv4Addr)
 	if err != nil {
@@ -96,22 +100,20 @@ func ListenForPeerBroadcast() string {
 		n, addr, err := conn.ReadFrom(buf)
 		if err == nil {
 			// Send your peer info to the sender and conclude broadcasting:
-			var remote_udp_request_identifier, _ = strconv.Atoi(string(buf[:n]))
+			var remote_udp_request_identifier = string(buf[:n])
 			if remote_udp_request_identifier != unique_udp_request_identifier {
-				return fmt.Sprintf(
+				return remote_udp_request_identifier, fmt.Sprintf(
 					ADDRESS_FORMAT,
 					strings.Split(addr.String(),
-						":")[0])
+						":")[0],
+					":"+strings.Split(remote_udp_request_identifier, ":")[1])
 			}
 		}
 	}
 }
 
-/*
- * returns @currentHost and @currentHostAddress
- */
 func GetHostAddress() (string, string) {
-	return currentHost, fmt.Sprintf(ADDRESS_FORMAT, currentHost)
+	return unique_udp_request_identifier, fmt.Sprintf(ADDRESS_FORMAT, currentHost, currentHostPort)
 }
 
 func initializeHostOutboundAddress() {
@@ -133,5 +135,5 @@ func initializeHostOutboundAddress() {
  * value to avoid peer collisions on local networks.
  */
 func generateNextConnectionIdentifier() {
-	unique_udp_request_identifier = int(rand.Int31())
+	unique_udp_request_identifier = strconv.Itoa(int(rand.Int31())) + currentHostPort
 }

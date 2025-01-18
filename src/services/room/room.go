@@ -18,7 +18,7 @@ type Room struct {
 	Members       []string                   `json:"members,omitempty" bson:"members,omitempty"`
 	Signature     *cryptography.Cryptography `json:"signature,omitempty" bson:"signature,omitempty"`
 	Audit         *audit.Audit               `json:"audit,omitempty" bson:"audit,omitempty"`
-	RoomMasterKey string                     `json:"roomMasterKey,omitempty" bson:"roomMasterKey,omitempty`
+	RoomMasterKey string                     `json:"roomMasterKey,omitempty" bson:"roomMasterKey,omitempty"`
 }
 
 type RoomOption func(Room) Room
@@ -82,6 +82,20 @@ func WithAudit(audit *audit.Audit) RoomOption {
 func WithRoomMasterKey(roomMasterKey string) RoomOption {
 	return func(room Room) Room {
 		room.RoomMasterKey = roomMasterKey
+		return room
+	}
+}
+
+func WithRoom(newRoom Room) RoomOption {
+	return func(room Room) Room {
+		room.Id = newRoom.Id
+		room.Info = newRoom.Info
+		room.Password = newRoom.Password
+		room.Capacity = newRoom.Capacity
+		room.Members = newRoom.Members
+		room.Signature = newRoom.Signature
+		room.Audit = newRoom.Audit
+		room.RoomMasterKey = newRoom.RoomMasterKey
 		return room
 	}
 }

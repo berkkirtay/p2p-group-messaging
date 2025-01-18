@@ -69,10 +69,13 @@ func updateMasterPeer(currentPeer peer.Peer) peer.Peer {
 		currentPeer.Address+"/peer",
 		&peers,
 		"hostname",
-		currentPeer.Hostname)
+		currentPeer.Hostname,
+		"role",
+		currentPeer.Role)
 	if res == nil || res.StatusCode != OK {
-		return peer.Peer{}
+		panic("Main peer connection error..")
 	}
+	//	fmt.Println(currentPeer)
 	return peers[0]
 }
 
@@ -124,7 +127,8 @@ func POST(
 	prepareHeadersForRequest(req)
 	res, err := client.Do(req)
 	if err != nil {
-		panic(err)
+		return res
+		//panic(err)
 	}
 	defer res.Body.Close()
 
