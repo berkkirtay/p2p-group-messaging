@@ -110,7 +110,8 @@ func buildUser(user User) User {
 	if !user.IsPeer {
 		userCrypto = cryptography.CreateCommonCrypto(
 			user.Name,
-			user.Role)
+			user.Role,
+			user.Password)
 	}
 	return CreateUser(
 		WithUser(user),

@@ -55,7 +55,7 @@ func startWithIDentifier(app *gin.Engine) {
 
 	}()
 	go func() {
-		time.Sleep(2000 * time.Millisecond)
+		time.Sleep(4000 * time.Millisecond)
 		wait <- true
 	}()
 	<-wait

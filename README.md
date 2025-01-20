@@ -3,26 +3,26 @@ I have been developing this program to utilize a messaging interface for my own 
 
 
 ## Simple flow of the program
-1. A requestor peer passes a public key and a signature to serving peer.
+1. A requestor peer passes a public key and a signature to serving peer to initiate a handshake.
 
-2. The serving peer validates the signature with the public key of the requestor peer by RSA algorithm and initializes a new session and authentication key for the peer. Then both peers agree on a new key by using ECDH and the serving peer passes the encrypted authentication key to the requestor.
+2. The serving peer validates the signature with the public key of the requestor peer by PKCS and initializes a new session and authentication key for the peer. Then both peers agree on a new key by using ECDH and the serving peer passes the encrypted authentication key to the requestor.
    
-4. In every new request, peers agree on a new key by using newly generated public keys and use this key to encrypt the generated authentication key.
+4. In every new communication session between peers, they calculate the next ECDH key and validate the key independently. Each peer uses a new ECDH key-pair in those different sessions, so the secret exchanged keys will be different as well.
 
 5. Key agreement in every transaction can be done both RSA and ECDH algorithms. In RSA however, serving peer decides the key and passes to the requestor.
 
-6. The requestor peer can now send room and message requests. And can use the exchanged key to encrypt the messages.
+6. The requestor peer can send room and message requests after successful authentication. And can use the exchanged key to encrypt the messages.
 
 7. Every room can have a master key to encrypt the messages and this key can be distributed to the member peers of the room securely.
 
-8. Master peer can choose the renew the room master key and it can send a synchronization requests to the all users in a room. 
+8. Master peer can choose the renew the room master key and send a synchronization requests to the all users in a room to increase the security. 
 
 ## Design
 - Design diagram of a local peer group
 
 ![img](design/design.jpg)
 
-- Detailed sequence diagram between two peer communication
+- Detailed sequence diagram of communication flows between two peers
 
 ![img](design/sequence.jpg)
 

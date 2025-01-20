@@ -102,7 +102,7 @@ func generateSHA256Object(values []string) [32]byte {
 	return sha256.Sum256(data)
 }
 
-func GenerateARandomMasterSecret() string {
+func GenerateARandomSecretKey() string {
 	randValue, err := rand.Int(rand.Reader, big.NewInt(32))
 	if err != nil {
 		panic(err)
@@ -123,7 +123,7 @@ func EnrichMasterSecret(secret string, hash string) string {
 	)
 }
 
-func generateKeyPair(salts ...string) (string, string) {
+func generateKeyPair() (string, string) {
 	keyPair, err := rsa.GenerateKey(rand.Reader, RSA_KEY_SIZE)
 	if err != nil {
 		panic(err)

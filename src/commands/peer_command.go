@@ -100,7 +100,8 @@ func initializeAMasterPeer() peer.Peer {
 		peer.WithHostname(hostname),
 		peer.WithAddress(address),
 		peer.WithRole(peer.OUTBOUND),
-		peer.WithCryptography(cryptography.CreateCommonCrypto()))
+		peer.WithCryptography(
+			cryptography.CreateCommonCrypto(hostname, address)))
 }
 
 func finalizeInitialization() {

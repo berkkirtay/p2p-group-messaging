@@ -87,7 +87,7 @@ func PostRoom(room Room) Room {
 		WithRoom(room),
 		WithId(strconv.Itoa(newRoomId+1)),
 		WithMembers([]string{}),
-		WithRoomMasterKey(cryptography.GenerateARandomMasterSecret()),
+		WithRoomMasterKey(cryptography.GenerateARandomSecretKey()),
 		WithSignature(cryptography.CreateCommonCrypto(
 			room.Name,
 			room.Info,

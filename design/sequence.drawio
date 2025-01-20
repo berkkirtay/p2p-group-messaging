@@ -1,37 +1,34 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:127.0) Gecko/20100101 Firefox/127.0" version="26.0.6">
   <diagram name="Page-1" id="S3cCJTQHOvdFIfK3MD2m">
-    <mxGraphModel dx="3457" dy="1415" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2045" dy="648" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="#000000" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-1" value="peer-1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-1" value="peer-1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="-90" y="890" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-2" value="peer-2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-2" value="peer-2" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="380" y="890" width="80" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-3" value="broadcasts a connection request" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-3" value="broadcasts a connection request" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=light-dark(#000000,#EDEDED);strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1050" as="sourcePoint" />
             <mxPoint x="415" y="1050" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-4" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="-55" y="970" width="10" height="760" as="geometry" />
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-4" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-55" y="970" width="10" height="720" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-5" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};" vertex="1" parent="1">
-          <mxGeometry x="415" y="970" width="10" height="760" as="geometry" />
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-5" value="" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="415" y="970" width="10" height="720" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-6" value="sends the main peer information to new peer" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-6" value="sends the main peer information to new peer" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="415" y="1080" as="sourcePoint" />
             <mxPoint x="-45" y="1080" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-7" value="Sequence Diagram between two peer communication" style="text;align=center;fontStyle=1;verticalAlign=middle;spacingLeft=3;spacingRight=3;strokeColor=none;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-210" y="850" width="360" height="26" as="geometry" />
-        </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-8" value="Initializes own node services" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-8" value="Initializes own node services" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry x="0.0118" relative="1" as="geometry">
             <mxPoint x="-45" y="980" as="sourcePoint" />
             <Array as="points">
@@ -41,7 +38,7 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-9" value="" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-9" value="" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=default;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="415" y="980" as="sourcePoint" />
             <Array as="points">
@@ -51,13 +48,13 @@
             <mxPoint x="410" y="1010" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-10" value="Initializes own node services" style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-10" value="Initializes own node services" style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="226.14" y="980" width="164.43" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-11" value="Peer handshake " style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=30;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-11" value="Peer handshake " style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=30;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="-156.3" y="1120" width="596.3" height="100" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-12" value="" style="curved=1;endArrow=classic;html=1;rounded=0;" edge="1" parent="1" target="_9v8p1bVrJ-pxuOfS_iw-2">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-12" value="" style="curved=1;endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=default;" parent="1" target="_9v8p1bVrJ-pxuOfS_iw-2" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="430" y="1010" as="sourcePoint" />
             <mxPoint x="470" y="950" as="targetPoint" />
@@ -67,19 +64,19 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-13" value="Becomes a main peer and acts like the database of the current context." style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-13" value="Becomes a main peer and acts like the database of the current context." style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="475.57" y="990" width="194.43" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-14" value="Peer broadcast flow" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=30;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-14" value="Peer broadcast flow" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=90;height=30;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="-156.3" y="1020" width="596.3" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-15" value="gets main peer information and verifies using digital signature" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-15" value="gets main peer information and verifies using digital signature" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1180" as="sourcePoint" />
             <mxPoint x="415" y="1180" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-16" value="selects peer-2 as main peer" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-16" value="selects peer-2 as main peer" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry x="0.0118" relative="1" as="geometry">
             <mxPoint x="-45" y="1130" as="sourcePoint" />
             <Array as="points">
@@ -89,13 +86,13 @@
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-17" value="sends peer credentials and ECDH public key" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-17" value="sends peer credentials and ECDH public key" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="415" y="1210" as="sourcePoint" />
             <mxPoint x="-45" y="1210" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-18" value="" style="curved=1;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-18" value="" style="curved=1;endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=default;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="425" y="1213" as="sourcePoint" />
             <mxPoint x="451" y="1150" as="targetPoint" />
@@ -105,68 +102,68 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-19" value="Initially a random ECDH key is generated but main peer generates a new ECDH key-pair for every new request coming from other peers for authorized flows." style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-19" value="Initially a random ECDH key is generated but main peer generates a new ECDH key-pair for every new request coming from other peers for authorized flows." style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="469.27" y="1190" width="194.43" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-20" value="Peer communication " style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;" vertex="1" parent="1">
-          <mxGeometry x="-210" y="1240" width="670" height="450" as="geometry" />
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-20" value="Peer communication " style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-210" y="1240" width="670" height="420" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-21" value="register a new user or get user data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-21" value="register a new user or get user data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1340" as="sourcePoint" />
             <mxPoint x="415" y="1340" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-22" value="Unauthorized flows" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-22" value="Unauthorized flows" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="-172.5" y="1280" width="612.5" height="140" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-23" value="get and post peer data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-23" value="get and post peer data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1310" as="sourcePoint" />
             <mxPoint x="415" y="1310" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-24" value="authenticate" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-24" value="authenticate" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1400" as="sourcePoint" />
             <mxPoint x="415" y="1400" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-25" value="send info-notification (bi-directional)" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;startArrow=classic;startFill=1;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-25" value="send info-notification (bi-directional)" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;startArrow=classic;startFill=1;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1370" as="sourcePoint" />
             <mxPoint x="415" y="1370" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-26" value="Authorized flows" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;" vertex="1" parent="1">
-          <mxGeometry x="-172.5" y="1440" width="612.5" height="240" as="geometry" />
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-26" value="Authorized flows" style="shape=umlFrame;whiteSpace=wrap;html=1;pointerEvents=0;width=106;height=30;labelBackgroundColor=none;fillColor=#182E3E;strokeColor=#FFFFFF;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="-172.5" y="1440" width="612.5" height="190" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-27" value="create room and get room data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-27" value="create room and get room data" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1470" as="sourcePoint" />
             <mxPoint x="415" y="1470" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-28" value="join and leave rooms" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-28" value="join and leave rooms" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1500" as="sourcePoint" />
             <mxPoint x="415" y="1500" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-29" value="send messages" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-29" value="send messages" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1530" as="sourcePoint" />
             <mxPoint x="415" y="1530" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-30" value="" style="curved=1;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-30" value="" style="curved=1;endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="405" y="1530" as="sourcePoint" />
             <mxPoint x="-45" y="1530" as="targetPoint" />
@@ -175,17 +172,17 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-31" value="sends a notification for the new message" style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="80" y="1550" width="220" height="20" as="geometry" />
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-31" value="sends a notification for the new message (bi-directional)" style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=#000000;fontColor=#FFFFFF;" parent="1" vertex="1">
+          <mxGeometry x="40" y="1550" width="300" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-32" value="get messages" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-32" value="get messages" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;labelBackgroundColor=#000000;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=light-dark(#ffffff, #ededed);" parent="1" edge="1">
           <mxGeometry width="80" relative="1" as="geometry">
             <mxPoint x="-45" y="1600" as="sourcePoint" />
             <mxPoint x="415" y="1600" as="targetPoint" />
             <mxPoint as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-33" value="" style="curved=1;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-33" value="" style="curved=1;endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=default;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="415" y="1603" as="sourcePoint" />
             <mxPoint x="441" y="1540" as="targetPoint" />
@@ -195,22 +192,22 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-34" value="Main peer sends a notification to all inbound peers for the new received message. This way peers can send a request to get new messages without having to poll the main peer. This provides a better networking and processing performance for all the peers. " style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-34" value="Main peer sends a notification to all inbound peers for the new received message. This way peers can send a request to get new messages without having to poll the main peer. This provides a better networking and processing performance for all the peers. " style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="469.27" y="1580" width="194.43" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-35" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.tick;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-35" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.tick;fillColor=#182E3E;strokeColor=#FFFFFF;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="490" y="1440" width="40" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-36" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.x;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-36" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.x;fillColor=#182E3E;strokeColor=#FFFFFF;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="623.6999999999999" y="1450" width="40" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-37" value="Server-side notification (interrupting)" style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-37" value="Server-side notification (interrupting)" style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="465" y="1490" width="125" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-38" value="Client-side polling" style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-38" value="Client-side polling" style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="597.5" y="1490" width="105" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-39" value="" style="curved=1;endArrow=classic;html=1;rounded=0;" edge="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-39" value="" style="curved=1;endArrow=classic;html=1;rounded=0;labelBackgroundColor=none;strokeColor=light-dark(#ffffff, #a0bcd2);fontColor=default;" parent="1" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="-180" y="1584" as="sourcePoint" />
             <mxPoint x="-180" y="1496" as="targetPoint" />
@@ -219,7 +216,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-40" value="For every new request, both peers generate the next ECDH key pair and exchange the public keys to calculate the next shared key to encrypt data." style="text;whiteSpace=wrap;html=1;fontSize=11;" vertex="1" parent="1">
+        <mxCell id="_9v8p1bVrJ-pxuOfS_iw-40" value="For every new request, both peers generate the next ECDH key pair and exchange the public keys to calculate the next shared key to encrypt data." style="text;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fontColor=#FFFFFF;" parent="1" vertex="1">
           <mxGeometry x="-390.00000000000006" y="1540" width="194.43" height="20" as="geometry" />
         </mxCell>
       </root>
